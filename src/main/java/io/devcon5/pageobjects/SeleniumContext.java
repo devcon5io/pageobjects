@@ -37,17 +37,27 @@ public class SeleniumContext extends ExternalResource {
 
     private Consumer<WebDriver.Options> driverInit;
 
+    private long startTime;
+
+    private long finishTime;
+
+    private Duration testDuration;
+
     @Override
     protected void before() throws Throwable {
         driver.get(baseUrl);
         driverInit.accept(driver.manage());
         CONTEXT.set(this);
+        this.startTime = System.nanoTime();
     }
 
     @Override
     protected void after() {
+        this.finishTime = System.nanoTime();
         getDriver().ifPresent(d -> d.quit());
         CONTEXT.set(null);
+        this.testDuration = Duration.ofNanos(this.finishTime - this.startTime);
+        LOG.info("Test executed in {} s", this.testDuration.getSeconds());
     }
 
     /**
@@ -76,6 +86,7 @@ public class SeleniumContext extends ExternalResource {
 
     /**
      * Indicates if a user is logged in to the application
+     *
      * @return
      */
     public boolean isLoggedIn() {
@@ -117,6 +128,15 @@ public class SeleniumContext extends ExternalResource {
      */
     public static Optional<SeleniumContext> currentContext() {
         return Optional.ofNullable(CONTEXT.get());
+    }
+
+    /**
+     * Returns the duration of the test execution.
+     * @return
+     *  the duration of the test execution
+     */
+    public Duration getTestDuration() {
+        return Optional.ofNullable(this.testDuration).orElseThrow(() -> new IllegalStateException("Test not finished"));
     }
 
     /**
@@ -201,7 +221,7 @@ public class SeleniumContext extends ExternalResource {
             return this;
         }
 
-        public SeleniumContextBuilder driverOptions(Consumer<WebDriver.Options> optionsInitializer ){
+        public SeleniumContextBuilder driverOptions(Consumer<WebDriver.Options> optionsInitializer) {
             this.optionsInitializer = optionsInitializer;
             return this;
         }
