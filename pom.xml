@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>pageobjects</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.1</version>
 
     <name>${project.artifactId}</name>
     <description>A small library to define a pageobject model for testing applications with selenium.</description>
