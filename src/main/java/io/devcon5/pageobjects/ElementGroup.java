@@ -1,7 +1,10 @@
 package io.devcon5.pageobjects;
 
+import static io.devcon5.classutils.ClassStreams.selfAndSupertypes;
 import static io.devcon5.pageobjects.PageObjectsInjector.injectFields;
 import static io.devcon5.pageobjects.PageObjectsInjector.injectMethods;
+
+import java.util.stream.Stream;
 
 import org.openqa.selenium.SearchContext;
 
@@ -21,6 +24,38 @@ public interface ElementGroup {
     default SearchContext getSearchContext() {
         return SeleniumContext.currentDriver()
                               .orElseThrow(() -> new IllegalStateException("Could not obtain current driver outside of test execution"));
+    }
+
+    /**
+     * Retrieves a nested {@link io.devcon5.pageobjects.ElementGroup} from this group by type. The method assumes there
+     * is only one {@link io.devcon5.pageobjects.ElementGroup} of a specific type.
+     *
+     * @param groupType
+     *         the type of the element group to retrieve
+     * @param <T>
+     *         the type of the {@link io.devcon5.pageobjects.ElementGroup} that should be retrieved
+     *
+     * @return the element group matching the specified type or an empty optional if no field of the specified type
+     * exists on the group.
+     */
+    @SuppressWarnings("unchecked")
+    default <T extends ElementGroup> T get(Class<T> groupType, Class<? extends Qualifier>... qualifiers) {
+        return (T) selfAndSupertypes(this.getClass())
+                .flatMap(c -> Stream.of(c.getDeclaredFields()))
+                .filter(f ->
+                                groupType.isAssignableFrom(f.getType())
+                                        && ( qualifiers.length == 0
+                                        || Stream.of(qualifiers).anyMatch(q -> f.getAnnotation(q) != null)))
+                .map(f -> {
+                    f.setAccessible(true);
+                    try {
+                        return f.get(this);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException("Could not retrieve field " + f, e);
+                    }
+                })
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No element group of type " + groupType + " found"));
     }
 
     /**
