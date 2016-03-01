@@ -46,7 +46,7 @@ public final class PageObjectsInjector {
 
         ClassStreams.selfAndSupertypes(group.getClass())
                     .flatMap(c -> Stream.of(c.getDeclaredMethods()))
-                    .filter(m -> Void.class.isAssignableFrom(m.getReturnType())
+                    .filter(m -> void.class.isAssignableFrom(m.getReturnType())
                             && m.getParameterCount() == 1
                             && Supplier.class.isAssignableFrom(m.getParameterTypes()[0]))
                     .forEach(m -> Optional.ofNullable(m.getDeclaredAnnotation(Locator.class)).ifPresent(
@@ -64,7 +64,7 @@ public final class PageObjectsInjector {
      * @param loc
      *  the locator to locate the web element
      */
-    public static void invokeSetter(Method m, ElementGroup target, Locator loc) {
+    private static void invokeSetter(Method m, ElementGroup target, Locator loc) {
         m.setAccessible(true);
         try {
             m.invoke(target, (Supplier<WebElement>) () -> WebElementLocator.locate(target.getSearchContext(), loc));
