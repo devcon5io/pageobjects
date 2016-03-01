@@ -22,7 +22,7 @@
         </Console>
     </appenders>
     <Loggers>
-        <Logger name="io.inkstand.scribble" level="debug" additivity="false">
+        <Logger name="io.devcon5.pageobjects" level="debug" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
         <Root level="error">

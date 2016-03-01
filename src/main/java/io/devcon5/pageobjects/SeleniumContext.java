@@ -51,7 +51,7 @@ public class SeleniumContext extends ExternalResource {
 
     private Duration loginTime;
 
-    private Consumer<WebDriver.Options> driverInit;
+    private Optional<Consumer<WebDriver.Options>> driverInit;
 
     private long startTime;
 
@@ -62,7 +62,7 @@ public class SeleniumContext extends ExternalResource {
     @Override
     protected void before() throws Throwable {
         driver.get(baseUrl);
-        driverInit.accept(driver.manage());
+        driverInit.ifPresent(di -> di.accept(driver.manage()));
         CONTEXT.set(this);
         this.startTime = System.nanoTime();
     }
@@ -246,7 +246,7 @@ public class SeleniumContext extends ExternalResource {
             SeleniumContext ctx = new SeleniumContext();
             ctx.baseUrl = this.baseUrl;
             ctx.driver = this.driver.get();
-            ctx.driverInit = this.optionsInitializer;
+            ctx.driverInit = Optional.ofNullable(this.optionsInitializer);
             ctx.loginAction = this.loginAction;
             ctx.logoutAction = this.logoutAction;
             return ctx;
