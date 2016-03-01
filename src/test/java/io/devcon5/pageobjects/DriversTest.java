@@ -17,7 +17,9 @@
 package io.devcon5.pageobjects;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -31,22 +33,29 @@ import org.openqa.selenium.safari.SafariDriver;
 public class DriversTest {
 
     @Test
+    @Ignore
     public void testFirefoxDriver() throws Exception {
         assertTrue(Drivers.Firefox.get() instanceof FirefoxDriver);
     }
 
     @Test
+    @Ignore
     public void testIEDriver() throws Exception {
+        assumeTrue(System.getProperties().containsKey("webdriver.ie.driver"));
         assertTrue(Drivers.IExplorer.get() instanceof InternetExplorerDriver);
     }
 
     @Test
+    @Ignore
     public void testChromeDriver() throws Exception {
+        assumeTrue(System.getProperties().containsKey("webdriver.ie.driver"));
         assertTrue(Drivers.Chrome.get() instanceof ChromeDriver);
     }
 
     @Test
+    @Ignore
     public void testSafariDriver() throws Exception {
+        assumeTrue(System.getenv("Path").contains("Safari"));
         assertTrue(Drivers.Safari.get() instanceof SafariDriver);
     }
 

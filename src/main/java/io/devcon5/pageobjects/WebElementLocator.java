@@ -17,6 +17,7 @@
 package io.devcon5.pageobjects;
 
 import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -26,12 +27,15 @@ import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.FluentWait;
+import org.slf4j.Logger;
 import com.google.common.base.Predicate;
 
 /**
  * Helper class to locate {@link org.openqa.selenium.WebElement}s by a {@link Locator} literal
  */
 public final class WebElementLocator {
+
+    private static final Logger LOG = getLogger(WebElementLocator.class);
 
     private WebElementLocator(){}
 
@@ -43,6 +47,7 @@ public final class WebElementLocator {
      *  the web element found by the locator. If the element could not be found a NoSuchElementException is thrown
      */
     public static WebElement locate(Locator loc){
+        LOG.debug("Locating element with {}={} (timeout={})", loc.by().name(), loc.value(), loc.timeout() );
         return waitForElement(loc.by().withSelector(loc.value()), loc.timeout()).get();
     }
 
@@ -56,6 +61,7 @@ public final class WebElementLocator {
      *  the web element found by the locator. If the element could not be found a NoSuchElementException is thrown
      */
     public static WebElement locate(SearchContext context, Locator loc){
+        LOG.debug("Locating element with {}={} (timeout={}) in {}", loc.by().name(), loc.value(), loc.timeout(),context);
         return waitForElement(context, loc.by().withSelector(loc.value()), loc.timeout()).get();
     }
 
