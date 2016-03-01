@@ -36,7 +36,7 @@ public interface Page extends ElementGroup{
                 .map(WebDriver::navigate)
                 .flatMap(nav ->
                         Optional.ofNullable(this.getClass().getDeclaredAnnotation(Locator.class))
-                                .flatMap(l -> l.by().locate(l.value())));
+                                .map(WebElementLocator::locate));
     }
 
     /**
