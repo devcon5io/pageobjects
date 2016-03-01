@@ -141,7 +141,7 @@ public final class PageObjectsInjector {
         try {
             final Class<? extends ElementGroup> elementGroupType = (Class<? extends ElementGroup>) target.getType();
             final ElementGroup nestedGroup =
-                    Optional.ofNullable(elementGroupType.getAnnotation(Locator.class))
+                    Optional.ofNullable(target.getAnnotation(Locator.class))
                             .map(loc -> createContextualInstance(elementGroupType, loc, parent))
                             .orElseGet(() -> createDefaultInstance(elementGroupType));
             target.setAccessible(true);

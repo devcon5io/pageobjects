@@ -18,16 +18,33 @@ package io.devcon5.pageobjects;
 
 import static io.devcon5.pageobjects.Locator.ByLocator.ID;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
 
 import org.junit.Test;
+import org.junit.runner.Description;
+import org.junit.runner.RunWith;
+import org.junit.runners.model.Statement;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.openqa.selenium.By;
+import org.openqa.selenium.SearchContext;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
  *
  */
+@RunWith(MockitoJUnitRunner.class)
 public class PageObjectsInjectorTest {
+
+    @Mock
+    private Description description;
+
+    @Mock
+    private WebElement element;
 
     @Test
     public void testInjectMethods() throws Exception {
@@ -45,13 +62,23 @@ public class PageObjectsInjectorTest {
     }
 
     @Test
-    public void testInjectFields() throws Exception {
+    public void testInjectFields() throws Throwable {
 
         //prepare
         ChildFieldInjectTestGroup group = new ChildFieldInjectTestGroup();
-
+        SeleniumContext ctx = SeleniumContext.builder().driver(() -> mock(WebDriver.class)).baseUrl("http://localhost")
+                                             .build();
+        when(ctx.getDriver().get().findElement(By.id("subgroup"))).thenReturn(element);
         //act
-        PageObjectsInjector.injectFields(group);
+        ctx.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+
+                PageObjectsInjector.injectFields(group);
+
+            }
+        }, description).evaluate();
+
 
         //assert
         //direct injection
@@ -61,6 +88,8 @@ public class PageObjectsInjectorTest {
         //element group injection
         assertNotNull(group.group);
         assertNotNull(group.group.field);
+        assertNotNull(group.ctxGroup.field);
+        assertNotNull(group.ctxGroup.field);
 
     }
 
@@ -70,6 +99,9 @@ public class PageObjectsInjectorTest {
         Supplier<WebElement> field;
 
         SubGroup group;
+
+        @Locator(by = ID, value="subgroup")
+        ContextualSubGroup ctxGroup;
 
     }
 
@@ -83,6 +115,18 @@ public class PageObjectsInjectorTest {
     public static class SubGroup implements ElementGroup {
         @Locator(by = ID, value = "testId")
         Supplier<WebElement> field;
+    }
+
+    public static class ContextualSubGroup implements ElementGroup {
+
+        private final SearchContext searchContext;
+
+        @Locator(by = ID, value = "testId")
+        Supplier<WebElement> field;
+
+        public ContextualSubGroup(SearchContext ctx){
+            this.searchContext = ctx;
+        }
     }
 
     public static class MethodInjectTestGroup implements ElementGroup {
