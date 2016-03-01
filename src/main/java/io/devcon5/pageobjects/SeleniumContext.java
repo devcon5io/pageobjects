@@ -171,7 +171,7 @@ public class SeleniumContext extends ExternalResource {
                                    if (base.charAt(base.length() - 1) != '/') {
                                        buf.append('/');
                                    }
-                                   if (relativePath.startsWith("(/")) {
+                                   if (relativePath.startsWith("/")) {
                                        buf.append(relativePath.substring(1));
                                    } else {
                                        buf.append(relativePath);
