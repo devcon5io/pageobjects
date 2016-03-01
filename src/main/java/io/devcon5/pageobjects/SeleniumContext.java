@@ -76,6 +76,16 @@ public class SeleniumContext extends ExternalResource {
         LOG.info("Test executed in {} s", this.testDuration.getSeconds());
     }
 
+    @Override
+    protected void beforeClass() throws Throwable {
+        before();
+    }
+
+    @Override
+    protected void afterClass() {
+        after();
+    }
+
     /**
      * Performs the login action with the specified user
      *

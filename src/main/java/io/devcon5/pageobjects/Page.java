@@ -19,13 +19,16 @@ package io.devcon5.pageobjects;
 import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
 
 import java.util.Optional;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import com.google.common.base.Predicate;
 
 /**
  * Interface to declare a page of an application
  */
-public interface Page extends ElementGroup{
+public interface Page extends ElementGroup {
 
     /**
      * Default implementation navigates to the url of the page specified by locator annotation. If the page as another
@@ -53,6 +56,10 @@ public interface Page extends ElementGroup{
         try {
             T page = pageType.newInstance();
             page.navigateTo().ifPresent(WebElement::click);
+            currentDriver().map(d -> new WebDriverWait(d, 150, 50))
+                           .orElseThrow(() -> new IllegalStateException("Context not initialized"))
+                           .until((Predicate<WebDriver>) d -> ((JavascriptExecutor) d).executeScript("return document.readyState")
+                                                                                      .equals("complete"));
             page.locateElements();
             return page;
         } catch (InstantiationException | IllegalAccessException e) {
