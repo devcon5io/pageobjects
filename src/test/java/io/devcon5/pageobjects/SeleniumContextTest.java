@@ -31,7 +31,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  *
@@ -149,7 +148,7 @@ public class SeleniumContextTest {
     public void testGetDriver() throws Exception {
 
         //assert
-        assertTrue(subject.getDriver().get() instanceof HtmlUnitDriver);
+        assertEquals(webDriver, subject.getDriver().get());
     }
 
     @Test
