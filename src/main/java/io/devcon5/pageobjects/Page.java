@@ -19,11 +19,12 @@ package io.devcon5.pageobjects;
 import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
 
 import java.util.Optional;
+
+import com.google.common.base.Predicate;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import com.google.common.base.Predicate;
 
 /**
  * Interface to declare a page of an application
