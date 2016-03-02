@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2016 DevCon5 GmbH, info@devcon5.ch
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.devcon5.pageobjects;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -35,19 +51,39 @@ public class SeleniumContext extends ExternalResource {
 
     private Duration loginTime;
 
-    private Consumer<WebDriver.Options> driverInit;
+    private Optional<Consumer<WebDriver.Options>> driverInit;
+
+    private long startTime;
+
+    private long finishTime;
+
+    private Duration testDuration;
 
     @Override
     protected void before() throws Throwable {
         driver.get(baseUrl);
-        driverInit.accept(driver.manage());
+        driverInit.ifPresent(di -> di.accept(driver.manage()));
         CONTEXT.set(this);
+        this.startTime = System.nanoTime();
     }
 
     @Override
     protected void after() {
+        this.finishTime = System.nanoTime();
         getDriver().ifPresent(d -> d.quit());
         CONTEXT.set(null);
+        this.testDuration = Duration.ofNanos(this.finishTime - this.startTime);
+        LOG.info("Test executed in {} s", this.testDuration.getSeconds());
+    }
+
+    @Override
+    protected void beforeClass() throws Throwable {
+        before();
+    }
+
+    @Override
+    protected void afterClass() {
+        after();
     }
 
     /**
@@ -76,6 +112,7 @@ public class SeleniumContext extends ExternalResource {
 
     /**
      * Indicates if a user is logged in to the application
+     *
      * @return
      */
     public boolean isLoggedIn() {
@@ -120,6 +157,15 @@ public class SeleniumContext extends ExternalResource {
     }
 
     /**
+     * Returns the duration of the test execution.
+     * @return
+     *  the duration of the test execution
+     */
+    public Duration getTestDuration() {
+        return Optional.ofNullable(this.testDuration).orElseThrow(() -> new IllegalStateException("Test not finished"));
+    }
+
+    /**
      * Resolves the URL path relative to the base URL.
      *
      * @param relativePath
@@ -135,7 +181,7 @@ public class SeleniumContext extends ExternalResource {
                                    if (base.charAt(base.length() - 1) != '/') {
                                        buf.append('/');
                                    }
-                                   if (relativePath.startsWith("(/")) {
+                                   if (relativePath.startsWith("/")) {
                                        buf.append(relativePath.substring(1));
                                    } else {
                                        buf.append(relativePath);
@@ -201,7 +247,7 @@ public class SeleniumContext extends ExternalResource {
             return this;
         }
 
-        public SeleniumContextBuilder driverOptions(Consumer<WebDriver.Options> optionsInitializer ){
+        public SeleniumContextBuilder driverOptions(Consumer<WebDriver.Options> optionsInitializer) {
             this.optionsInitializer = optionsInitializer;
             return this;
         }
@@ -210,7 +256,7 @@ public class SeleniumContext extends ExternalResource {
             SeleniumContext ctx = new SeleniumContext();
             ctx.baseUrl = this.baseUrl;
             ctx.driver = this.driver.get();
-            ctx.driverInit = this.optionsInitializer;
+            ctx.driverInit = Optional.ofNullable(this.optionsInitializer);
             ctx.loginAction = this.loginAction;
             ctx.logoutAction = this.logoutAction;
             return ctx;

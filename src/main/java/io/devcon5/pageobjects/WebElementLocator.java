@@ -1,15 +1,33 @@
+/*
+ * Copyright 2015-2016 DevCon5 GmbH, info@devcon5.ch
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.devcon5.pageobjects;
 
 import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.SearchContext;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.FluentWait;
+import org.slf4j.Logger;
 import com.google.common.base.Predicate;
 
 /**
@@ -17,30 +35,46 @@ import com.google.common.base.Predicate;
  */
 public final class WebElementLocator {
 
-    private WebElementLocator(){}
+    private static final Logger LOG = getLogger(WebElementLocator.class);
+
+    private WebElementLocator() {
+
+    }
 
     /**
      * Locates the element using the current driver as search context.
+     *
      * @param loc
-     *  the locator to specify the element to locate
-     * @return
-     *  the web element found by the locator. If the element could not be found a NoSuchElementException is thrown
+     *         the locator to specify the element to locate
+     *
+     * @return the web element found by the locator. If the element could not be found a NoSuchElementException is
+     * thrown
      */
-    public static WebElement locate(Locator loc){
+    public static WebElement locate(Locator loc) {
+
+        LOG.debug("Locating element with {}={} (timeout={})", loc.by().name(), loc.value(), loc.timeout());
         return waitForElement(loc.by().withSelector(loc.value()), loc.timeout()).get();
     }
 
     /**
      * Locates the element using the search context and locator, waiting for the timeout specified in the locator.
+     *
      * @param context
-     *  the search context to locate the element in
+     *         the search context to locate the element in
      * @param loc
-     *  the locator to specify the element
-     * @return
-     *  the web element found by the locator. If the element could not be found a NoSuchElementException is thrown
+     *         the locator to specify the element
+     *
+     * @return the web element found by the locator. If the element could not be found a NoSuchElementException is
+     * thrown
      */
-    public static WebElement locate(SearchContext context, Locator loc){
-        return waitForElement(context, loc.by().withSelector(loc.value()), loc.timeout()).get();
+    public static WebElement locate(SearchContext context, Locator loc) {
+
+        LOG.debug("Locating element with {}={} (timeout={}) in {}",
+                  loc.by().name(),
+                  loc.value(),
+                  loc.timeout(),
+                  context);
+        return waitForElement(context, loc.by().withSelector(loc.value()), loc.timeout());
     }
 
     /**
@@ -57,15 +91,13 @@ public final class WebElementLocator {
      *
      * @return the located element
      */
-    public static Optional<WebElement> waitForElement(final SearchContext context, final By by, final int waitSec) {
-        return currentDriver()
-                .map(driver -> {
-                    new FluentWait<>(driver)
-                            .ignoring(NoSuchElementException.class)
-                            .withTimeout(waitSec, TimeUnit.SECONDS)
-                            .until(((Predicate<WebDriver>) d -> context.findElement(by).isDisplayed()));
-                    return driver.findElement(by);
-                });
+    public static WebElement waitForElement(final SearchContext context, final By by, final int waitSec) {
+
+        new FluentWait<>(context).ignoring(NoSuchElementException.class)
+                                 .withTimeout(waitSec, TimeUnit.SECONDS)
+                                 .until((Predicate<SearchContext>) d -> context.findElement(by).isDisplayed());
+        return context.findElement(by);
+
     }
 
     /**
@@ -79,7 +111,8 @@ public final class WebElementLocator {
      * @return the element found
      */
     public static Optional<WebElement> waitForElement(final By by, final int waitSec) {
-        return currentDriver().flatMap(d -> waitForElement(d, by, waitSec));
+
+        return currentDriver().map(d -> waitForElement(d, by, waitSec));
     }
 
 }

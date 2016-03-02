@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2015-2016 DevCon5 GmbH, info@devcon5.ch
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>parent</artifactId>
         <groupId>io.devcon5</groupId>
-        <version>1.1</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>pageobjects</artifactId>
-	<version>0.1</version>
+	<version>0.2</version>
 
     <name>${project.artifactId}</name>
     <description>A small library to define a pageobject model for testing applications with selenium.</description>
@@ -22,33 +38,64 @@
             <test.hamcrest.version>1.3</test.hamcrest.version>
             <test.scribble.version>0.3.2</test.scribble.version>
             <org.slf4j.version>1.7.13</org.slf4j.version>
+            <log4j.version>2.0-rc1</log4j.version>
             <cglib.version>3.2.1</cglib.version>
             <selenium.version>2.52.0</selenium.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>io.inkstand</groupId>
-            <artifactId>scribble-core</artifactId>
-            <scope>compile</scope>
-			<version>${test.scribble.version}</version>
+            <groupId>io.devcon5</groupId>
+            <artifactId>classutils</artifactId>
+            <version>${devcon5.commons}</version>
         </dependency>
+        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${org.slf4j.version}</version>
         </dependency>
+        <!-- SLF4J & Log4J2 Bindings are added so that tests can produce log-output -->
+        <!-- Binding for Log4J -->
         <dependency>
-            <groupId>io.devcon5</groupId>
-            <artifactId>classutils</artifactId>
-			<version>${devcon5.commons}</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>provided</scope>
         </dependency>
+        <!-- Log4j API and Core implementation required for binding -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>compile</scope>
 			<version>${test.junit.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+            <version>${test.mockito.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.inkstand</groupId>
+            <artifactId>scribble-core</artifactId>
+            <scope>compile</scope>
+            <version>${test.scribble.version}</version>
+        </dependency>
+        <!-- Selenium dependencies -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -64,6 +111,16 @@
             <artifactId>selenium-ie-driver</artifactId>
             <version>${selenium.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-safari-driver</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-chrome-driver</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -71,7 +128,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -79,88 +135,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <additionalJOptions>
-                                <additionalJOption>-J-Xmx32m</additionalJOption>
-                            </additionalJOptions>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <configuration>
-                            <keyname>4C61E6AA</keyname>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>external.atlassian.jgitflow</groupId>
-                        <artifactId>jgitflow-maven-plugin</artifactId>
-                        <configuration>
-                            <enableSshAgent>false</enableSshAgent>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                            <pushFeatures>true</pushFeatures>
-                            <pushReleases>true</pushReleases>
-                            <pushHotfixes>true</pushHotfixes>
-                            <noDeploy>false</noDeploy>
-                            <alwaysUpdateOrigin>true</alwaysUpdateOrigin>
-                            <flowInitContext>
-                                <developBranchName>development</developBranchName>
-                                <versionTagPrefix>rev-</versionTagPrefix>
-                            </flowInitContext>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 
 </project>

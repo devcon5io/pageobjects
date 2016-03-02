@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2016 DevCon5 GmbH, info@devcon5.ch
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.devcon5.pageobjects;
 
 import java.lang.reflect.Field;
@@ -30,7 +46,7 @@ public final class PageObjectsInjector {
 
         ClassStreams.selfAndSupertypes(group.getClass())
                     .flatMap(c -> Stream.of(c.getDeclaredMethods()))
-                    .filter(m -> Void.class.isAssignableFrom(m.getReturnType())
+                    .filter(m -> void.class.isAssignableFrom(m.getReturnType())
                             && m.getParameterCount() == 1
                             && Supplier.class.isAssignableFrom(m.getParameterTypes()[0]))
                     .forEach(m -> Optional.ofNullable(m.getDeclaredAnnotation(Locator.class)).ifPresent(
@@ -48,7 +64,7 @@ public final class PageObjectsInjector {
      * @param loc
      *  the locator to locate the web element
      */
-    public static void invokeSetter(Method m, ElementGroup target, Locator loc) {
+    private static void invokeSetter(Method m, ElementGroup target, Locator loc) {
         m.setAccessible(true);
         try {
             m.invoke(target, (Supplier<WebElement>) () -> WebElementLocator.locate(target.getSearchContext(), loc));
@@ -125,7 +141,7 @@ public final class PageObjectsInjector {
         try {
             final Class<? extends ElementGroup> elementGroupType = (Class<? extends ElementGroup>) target.getType();
             final ElementGroup nestedGroup =
-                    Optional.ofNullable(elementGroupType.getAnnotation(Locator.class))
+                    Optional.ofNullable(target.getAnnotation(Locator.class))
                             .map(loc -> createContextualInstance(elementGroupType, loc, parent))
                             .orElseGet(() -> createDefaultInstance(elementGroupType));
             target.setAccessible(true);
