@@ -48,12 +48,15 @@ public class SeleniumContextTest {
     @Mock
     private Description description;
 
+    @Mock
+    private WebDriver webDriver;
+
     private String basePath = "http://testBaseUrl";
 
     @Before
     public void setUp() throws Exception {
 
-        subject = SeleniumContext.builder().baseUrl(basePath).driver(Drivers.Headless).build();
+        subject = SeleniumContext.builder().baseUrl(basePath).driver(() -> webDriver).build();
     }
 
     @Test
@@ -63,7 +66,7 @@ public class SeleniumContextTest {
         final AtomicBoolean loggedIn = new AtomicBoolean();
         final SeleniumContext ctx = SeleniumContext.builder()
                                                    .baseUrl(basePath)
-                                                   .driver(Drivers.Headless)
+                                                   .driver(() -> webDriver)
                                                    .loginAction((u, d) -> {
                                                        user.set(u);
                                                        try {
@@ -100,7 +103,7 @@ public class SeleniumContextTest {
         final AtomicBoolean loggedIn = new AtomicBoolean();
         final SeleniumContext ctx = SeleniumContext.builder()
                                                    .baseUrl(basePath)
-                                                   .driver(Drivers.Headless)
+                                                   .driver(() -> webDriver)
                                                    .loginAction((u, d) -> {
                                                    })
                                                    .logoutAction((d) -> {
@@ -293,7 +296,7 @@ public class SeleniumContextTest {
     private void testResolvePathInsideTest(final String basePath, final String relPath, final String expected)
             throws Throwable {
 
-        SeleniumContext ctx = SeleniumContext.builder().baseUrl(basePath).driver(Drivers.Headless).build();
+        SeleniumContext ctx = SeleniumContext.builder().baseUrl(basePath).driver(() -> webDriver).build();
         AtomicReference<String> path = new AtomicReference<>();
 
         Statement stmt = new Statement() {
