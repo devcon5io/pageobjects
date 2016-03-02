@@ -36,11 +36,10 @@ public interface Page extends ElementGroup {
      * mechanism of navigating to it, this method must be overriden.
      */
     default Optional<WebElement> navigateTo() {
-        return currentDriver()
-                .map(WebDriver::navigate)
-                .flatMap(nav ->
-                        Optional.ofNullable(this.getClass().getDeclaredAnnotation(Locator.class))
-                                .flatMap(l -> l.by().locate(l.value())));
+
+        return currentDriver().map(WebDriver::navigate)
+                              .flatMap(nav -> Optional.ofNullable(this.getClass().getDeclaredAnnotation(Locator.class))
+                                                      .flatMap(l -> l.by().locate(l.value())));
     }
 
     /**
@@ -54,17 +53,18 @@ public interface Page extends ElementGroup {
      * @return an instance of the page
      */
     static <T extends Page> T navigateTo(Class<T> pageType) {
+
         try {
             T page = pageType.newInstance();
             page.navigateTo().ifPresent(WebElement::click);
             currentDriver().map(d -> new WebDriverWait(d, 150, 50))
                            .orElseThrow(() -> new IllegalStateException("Context not initialized"))
-                           .until((Predicate<WebDriver>) d -> ((JavascriptExecutor) d).executeScript("return document.readyState")
-                                                                                      .equals("complete"));
+                           .until((Predicate<WebDriver>) d -> "complete".equals(((JavascriptExecutor) d).executeScript(
+                                   "return document.readyState")));
             page.locateElements();
             return page;
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
 
     }

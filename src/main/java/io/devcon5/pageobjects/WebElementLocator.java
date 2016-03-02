@@ -92,9 +92,10 @@ public final class WebElementLocator {
      * @return the located element
      */
     public static WebElement waitForElement(final SearchContext context, final By by, final int waitSec) {
+
         new FluentWait<>(context).ignoring(NoSuchElementException.class)
                                  .withTimeout(waitSec, TimeUnit.SECONDS)
-                                 .until(((Predicate<SearchContext>) d -> context.findElement(by).isDisplayed()));
+                                 .until((Predicate<SearchContext>) d -> context.findElement(by).isDisplayed());
         return context.findElement(by);
 
     }
@@ -110,6 +111,7 @@ public final class WebElementLocator {
      * @return the element found
      */
     public static Optional<WebElement> waitForElement(final By by, final int waitSec) {
+
         return currentDriver().map(d -> waitForElement(d, by, waitSec));
     }
 
