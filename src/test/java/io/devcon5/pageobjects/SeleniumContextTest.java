@@ -52,23 +52,32 @@ public class SeleniumContextTest {
 
     @Before
     public void setUp() throws Exception {
+
         subject = SeleniumContext.builder().baseUrl(basePath).driver(Drivers.Headless).build();
     }
 
     @Test
     public void testLogin() throws Throwable {
         //prepare
-        AtomicReference<User> user = new AtomicReference<>();
-        AtomicBoolean loggedIn = new AtomicBoolean();
-        SeleniumContext ctx = SeleniumContext.builder()
-                                             .baseUrl(basePath)
-                                             .driver(Drivers.Headless)
-                                             .loginAction((u, d) -> user.set(u))
-                                             .build();
-        Statement stmt = new Statement() {
+        final AtomicReference<User> user = new AtomicReference<>();
+        final AtomicBoolean loggedIn = new AtomicBoolean();
+        final SeleniumContext ctx = SeleniumContext.builder()
+                                                   .baseUrl(basePath)
+                                                   .driver(Drivers.Headless)
+                                                   .loginAction((u, d) -> {
+                                                       user.set(u);
+                                                       try {
+                                                           Thread.sleep(50);
+                                                       } catch (InterruptedException e) {
+                                                           //
+                                                       }
+                                                   })
+                                                   .build();
+        final Statement stmt = new Statement() {
 
             @Override
             public void evaluate() throws Throwable {
+
                 SeleniumContext.currentContext().ifPresent(ctx -> {
                     ctx.login(new User("test", "pw"));
                     loggedIn.set(ctx.isLoggedIn());
@@ -78,24 +87,52 @@ public class SeleniumContextTest {
         //act
         ctx.apply(stmt, description).evaluate();
 
+        //assert
         assertTrue(loggedIn.get());
         assertEquals("test", user.get().getUsername());
         assertEquals("pw", user.get().getPassword());
+        assertTrue(ctx.getLoginTime().compareTo(Duration.ofMillis(45)) >= 0);
     }
 
     @Test
-    public void testLogout_outsideTest_false() throws Exception {
-        subject.logout();
+    public void testLogout() throws Throwable {
+        //prepare
+        final AtomicBoolean loggedIn = new AtomicBoolean();
+        final SeleniumContext ctx = SeleniumContext.builder()
+                                                   .baseUrl(basePath)
+                                                   .driver(Drivers.Headless)
+                                                   .loginAction((u, d) -> {
+                                                   })
+                                                   .logoutAction((d) -> {
+                                                   })
+                                                   .build();
+        final Statement stmt = new Statement() {
+
+            @Override
+            public void evaluate() throws Throwable {
+
+                SeleniumContext.currentContext().ifPresent(ctx -> {
+                    ctx.login(new User("test", "pw"));
+                    ctx.logout();
+                    loggedIn.set(ctx.isLoggedIn());
+                });
+            }
+        };
+        //act
+        ctx.apply(stmt, description).evaluate();
+
+        //assert
+        assertFalse(loggedIn.get());
     }
 
     @Test
     public void testIsLoggedIn_noLogin_false() throws Exception {
+
         assertFalse(subject.isLoggedIn());
     }
 
     @Test
     public void testGetLoginTime_outsideTest() throws Exception {
-
         //prepare
 
         //act
@@ -121,6 +158,7 @@ public class SeleniumContextTest {
 
     @Test
     public void testCurrentContext_outsideTest_notSet() throws Exception {
+
         assertFalse(SeleniumContext.currentContext().isPresent());
     }
 
@@ -130,8 +168,10 @@ public class SeleniumContextTest {
         AtomicReference<SeleniumContext> ctx = new AtomicReference<>();
 
         Statement stmt = new Statement() {
+
             @Override
             public void evaluate() throws Throwable {
+
                 ctx.set(SeleniumContext.currentContext().get());
             }
         };
@@ -145,6 +185,7 @@ public class SeleniumContextTest {
 
     @Test
     public void testCurrentDriver_outsideTest_notSet() throws Exception {
+
         assertNotNull(SeleniumContext.currentDriver());
         assertFalse(SeleniumContext.currentDriver().isPresent());
     }
@@ -155,8 +196,10 @@ public class SeleniumContextTest {
         AtomicReference<WebDriver> driver = new AtomicReference<>();
 
         Statement stmt = new Statement() {
+
             @Override
             public void evaluate() throws Throwable {
+
                 driver.set(SeleniumContext.currentDriver().get());
             }
         };
@@ -170,6 +213,7 @@ public class SeleniumContextTest {
 
     @Test(expected = IllegalStateException.class)
     public void testGetTestDuration_beforeTest() throws Exception {
+
         subject.getTestDuration();
     }
 
@@ -177,8 +221,10 @@ public class SeleniumContextTest {
     public void testGetTestDuration_afterTest() throws Throwable {
         //prepare
         Statement stmt = new Statement() {
+
             @Override
             public void evaluate() throws Throwable {
+
                 Thread.sleep(50);
             }
         };
@@ -251,8 +297,10 @@ public class SeleniumContextTest {
         AtomicReference<String> path = new AtomicReference<>();
 
         Statement stmt = new Statement() {
+
             @Override
             public void evaluate() throws Throwable {
+
                 path.set(SeleniumContext.resolve(relPath));
             }
         };
