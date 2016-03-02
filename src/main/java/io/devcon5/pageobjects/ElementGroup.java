@@ -20,6 +20,7 @@ import static io.devcon5.classutils.ClassStreams.selfAndSupertypes;
 import static io.devcon5.pageobjects.PageObjectsInjector.injectFields;
 import static io.devcon5.pageobjects.PageObjectsInjector.injectMethods;
 
+import java.lang.annotation.Annotation;
 import java.util.stream.Stream;
 
 import org.openqa.selenium.SearchContext;
@@ -55,11 +56,10 @@ public interface ElementGroup {
      * exists on the group.
      */
     @SuppressWarnings("unchecked")
-    default <T extends ElementGroup> T get(Class<T> groupType, Class<? extends Qualifier>... qualifiers) {
+    default <T extends ElementGroup> T get(Class<T> groupType, Class<? extends Annotation>... qualifiers) {
         return (T) selfAndSupertypes(this.getClass())
                 .flatMap(c -> Stream.of(c.getDeclaredFields()))
-                .filter(f ->
-                                groupType.isAssignableFrom(f.getType())
+                .filter(f -> groupType.isAssignableFrom(f.getType())
                                         && ( qualifiers.length == 0
                                         || Stream.of(qualifiers).anyMatch(q -> f.getAnnotation(q) != null)))
                 .map(f -> {

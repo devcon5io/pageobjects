@@ -93,6 +93,8 @@ public class PageObjectsInjectorTest {
 
     }
 
+    //// Test Page Object classes
+
     public static class FieldInjectTestGroup implements ElementGroup {
 
         @Locator(by = ID, value = "testId")
