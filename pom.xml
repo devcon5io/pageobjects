@@ -20,7 +20,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>io.devcon5</groupId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>pageobjects</artifactId>
