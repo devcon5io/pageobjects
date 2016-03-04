@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import io.devcon5.pageobjects.ElementGroup;
+import io.devcon5.pageobjects.measure.ResponseTimeCollector;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 

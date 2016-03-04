@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package io.devcon5.pageobjects.tx;
+package io.devcon5.pageobjects.measure;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
-
-import io.devcon5.pageobjects.measure.TimeMeasure;
 
 /**
  * ResponseTime of a Transaction. Is a specific {@link io.devcon5.pageobjects.measure.TimeMeasure} that associates

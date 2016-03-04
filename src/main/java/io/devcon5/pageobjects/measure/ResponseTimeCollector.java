@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.devcon5.pageobjects.tx;
+package io.devcon5.pageobjects.measure;
 
 import static org.slf4j.LoggerFactory.getLogger;
 

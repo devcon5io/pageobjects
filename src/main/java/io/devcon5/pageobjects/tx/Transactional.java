@@ -18,6 +18,8 @@ package io.devcon5.pageobjects.tx;
 
 import java.time.Instant;
 
+import io.devcon5.pageobjects.measure.ResponseTimeCollector;
+
 /**
  * Adds transaction support to a page object. Using transactions, response times of accesses to page objects can be
  * recorded. To automatically record certain actions such as page load or method execution the according elements

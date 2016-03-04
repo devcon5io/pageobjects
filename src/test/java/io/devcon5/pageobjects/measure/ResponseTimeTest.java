@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.devcon5.pageobjects.tx;
+package io.devcon5.pageobjects.measure;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

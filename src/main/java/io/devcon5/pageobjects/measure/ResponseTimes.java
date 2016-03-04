@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.devcon5.pageobjects.tx;
+package io.devcon5.pageobjects.measure;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -25,8 +25,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
-import io.devcon5.pageobjects.measure.TimeMeasure;
 
 /**
  * Global Handler for recording response time. As default setting, the response times are stored in a global collection.
