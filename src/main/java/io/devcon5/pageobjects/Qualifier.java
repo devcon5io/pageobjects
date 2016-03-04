@@ -21,6 +21,7 @@ package io.devcon5.pageobjects;
  */
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -31,6 +32,7 @@ import java.lang.annotation.Target;
  * be qualified in order to access it via the {@link ElementGroup#get(Class, Class[])}  method.
  *
  */
+@Inherited
 @Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Qualifier {

@@ -26,6 +26,8 @@ import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 
 import io.devcon5.classutils.ClassStreams;
+import io.devcon5.pageobjects.tx.TransactionHelper;
+import io.devcon5.pageobjects.tx.Transactional;
 
 /**
  * Injector to inject WebElement suppliers to Fields and Methods of a Page
@@ -140,13 +142,16 @@ public final class PageObjectsInjector {
     private static void injectElementGroup(Field target, ElementGroup parent) {
         try {
             final Class<? extends ElementGroup> elementGroupType = (Class<? extends ElementGroup>) target.getType();
-            final ElementGroup nestedGroup =
+            ElementGroup nestedGroup =
                     Optional.ofNullable(target.getAnnotation(Locator.class))
                             .map(loc -> createContextualInstance(elementGroupType, loc, parent))
                             .orElseGet(() -> createDefaultInstance(elementGroupType));
             target.setAccessible(true);
-            target.set(parent, nestedGroup);
             injectFields(nestedGroup);
+            if(Transactional.class.isAssignableFrom(target.getDeclaringClass())){
+                nestedGroup = TransactionHelper.addTransactionSupport(nestedGroup);
+            }
+            target.set(parent, nestedGroup);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Could not init element group", e);
         }

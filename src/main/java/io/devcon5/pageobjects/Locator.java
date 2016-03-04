@@ -19,6 +19,7 @@ package io.devcon5.pageobjects;
 import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -31,6 +32,7 @@ import org.openqa.selenium.WebElement;
 /**
  * A locator annotation to declare how a page or an element can be addressed
  */
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
 public @interface Locator {

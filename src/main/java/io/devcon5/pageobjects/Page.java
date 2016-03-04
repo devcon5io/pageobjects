@@ -17,19 +17,16 @@
 package io.devcon5.pageobjects;
 
 import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
-import static io.devcon5.pageobjects.measure.ExecutionStopWatch.runMeasured;
 import static io.devcon5.pageobjects.tx.TransactionHelper.getClassTxName;
-import static org.slf4j.LoggerFactory.getLogger;
 
-import java.time.Duration;
 import java.util.Optional;
-
-import com.google.common.base.Predicate;
-import io.devcon5.pageobjects.tx.Transactional;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import com.google.common.base.Predicate;
+
+import io.devcon5.pageobjects.tx.Transactional;
 
 /**
  * Interface to declare a page of an application
@@ -42,7 +39,7 @@ public interface Page extends ElementGroup {
      */
     default void loadPage() {
         currentDriver().map(driver -> {
-            Optional.ofNullable(this.getClass().getDeclaredAnnotation(Locator.class))
+            Optional.ofNullable(this.getClass().getAnnotation(Locator.class))
                     .flatMap(l -> l.by().locate(l.value()))
                     .ifPresent(WebElement::click);
             new WebDriverWait(driver, 150, 50).until((Predicate<WebDriver>) d -> ((JavascriptExecutor) d).executeScript(
@@ -64,7 +61,7 @@ public interface Page extends ElementGroup {
     static <T extends Page> T navigateTo(Class<T> pageType) {
 
         final T page = PageLoader.loadPage(pageType);
-        final Optional<Transactional> tx = Optional.ofNullable(page instanceof Transactional
+        final Optional<Transactional> tx = Optional.ofNullable(Transactional.class.isAssignableFrom(pageType)
                                                                ? (Transactional) page
                                                                : null);
         tx.ifPresent(ts -> getClassTxName(pageType).ifPresent(ts::txBegin));
@@ -74,8 +71,7 @@ public interface Page extends ElementGroup {
             tx.ifPresent(ts -> getClassTxName(pageType).ifPresent(ts::txEnd));
         }
 
-        final Duration dur = runMeasured(page::locateElements).getDuration();
-        getLogger("PERF").debug("time to locateElements = {}", dur);
+        page.locateElements();
         return page;
 
     }

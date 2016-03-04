@@ -80,7 +80,6 @@ public class ResponseTimeCollector {
      *  the end point
      */
     public void captureTx(String txName, Instant start, Instant end) {
-
         captureTx(txName, start, Duration.between(start, end));
     }
 
@@ -94,7 +93,7 @@ public class ResponseTimeCollector {
      *  the duration of the execution
      */
     public void captureTx(String txName, Instant start, Duration duration) {
-
+        LOG.trace("TX {} started {} took {}", txName, start, duration);
         ResponseTimes.collect(new ResponseTime(txName, start, duration));
     }
 
