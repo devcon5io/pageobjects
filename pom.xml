@@ -24,7 +24,7 @@
     </parent>
 
     <artifactId>pageobjects</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.3-SNAPSHOT</version>
 
     <name>${project.artifactId}</name>
     <description>A small library to define a pageobject model for testing applications with selenium.</description>

@@ -22,11 +22,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+
+import com.google.common.base.Predicate;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import com.google.common.base.Predicate;
 
 /**
  * Interface to declare a page of an application
@@ -38,11 +39,10 @@ public interface Page extends ElementGroup {
      * mechanism of navigating to it, this method must be overriden.
      */
     default Optional<WebElement> navigateTo() {
-        return currentDriver()
-                .map(WebDriver::navigate)
-                .flatMap(nav ->
-                        Optional.ofNullable(this.getClass().getDeclaredAnnotation(Locator.class))
-                                .flatMap(l -> l.by().locate(l.value())));
+
+        return currentDriver().map(WebDriver::navigate)
+                              .flatMap(nav -> Optional.ofNullable(this.getClass().getDeclaredAnnotation(Locator.class))
+                                                      .flatMap(l -> l.by().locate(l.value())));
     }
 
     /**
@@ -56,6 +56,7 @@ public interface Page extends ElementGroup {
      * @return an instance of the page
      */
     static <T extends Page> T navigateTo(Class<T> pageType) {
+
         try {
             final T page = pageType.newInstance();
             final Optional<TransactionSupport> tx = Optional.ofNullable(page instanceof TransactionSupport
@@ -73,7 +74,7 @@ public interface Page extends ElementGroup {
             getLogger("PERF").debug("time to locateElements = {}", Duration.between(start, Instant.now()));
             return page;
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
 
     }

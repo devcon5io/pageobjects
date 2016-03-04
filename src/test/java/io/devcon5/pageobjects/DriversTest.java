@@ -35,33 +35,33 @@ public class DriversTest {
     @Test
     @Ignore
     public void testFirefoxDriver() throws Exception {
-        assertTrue(Drivers.Firefox.get() instanceof FirefoxDriver);
+        assertTrue(Drivers.FIREFOX.get() instanceof FirefoxDriver);
     }
 
     @Test
     @Ignore
     public void testIEDriver() throws Exception {
         assumeTrue(System.getProperties().containsKey("webdriver.ie.driver"));
-        assertTrue(Drivers.IExplorer.get() instanceof InternetExplorerDriver);
+        assertTrue(Drivers.IEXPLORER.get() instanceof InternetExplorerDriver);
     }
 
     @Test
     @Ignore
     public void testChromeDriver() throws Exception {
         assumeTrue(System.getProperties().containsKey("webdriver.ie.driver"));
-        assertTrue(Drivers.Chrome.get() instanceof ChromeDriver);
+        assertTrue(Drivers.CHROME.get() instanceof ChromeDriver);
     }
 
     @Test
     @Ignore
     public void testSafariDriver() throws Exception {
         assumeTrue(System.getenv("Path").contains("Safari"));
-        assertTrue(Drivers.Safari.get() instanceof SafariDriver);
+        assertTrue(Drivers.SAFARI.get() instanceof SafariDriver);
     }
 
     @Test
     public void testHeadlessDriver() throws Exception {
-        assertTrue(Drivers.Headless.get() instanceof HtmlUnitDriver);
+        assertTrue(Drivers.HEADLESS.get() instanceof HtmlUnitDriver);
     }
 
 }

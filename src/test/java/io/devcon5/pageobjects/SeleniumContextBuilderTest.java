@@ -18,15 +18,21 @@ package io.devcon5.pageobjects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.openqa.selenium.WebDriver;
 
 /**
  *
  */
+@RunWith(MockitoJUnitRunner.class)
 public class SeleniumContextBuilderTest {
+
+    @Mock
+    private WebDriver webDriver;
 
     @Test
     public void testBuilder() throws Exception {
@@ -44,11 +50,11 @@ public class SeleniumContextBuilderTest {
         //prepare
 
         //act
-        SeleniumContext ctx = SeleniumContext.builder().baseUrl("myBaseUrl").driver(Drivers.Headless).build();
+        SeleniumContext ctx = SeleniumContext.builder().baseUrl("myBaseUrl").driver(() -> webDriver).build();
 
         //assert
         assertNotNull(ctx);
         assertEquals("myBaseUrl", ctx.getBaseUrl());
-        assertTrue(ctx.getDriver().get() instanceof HtmlUnitDriver);
+        assertEquals(webDriver, ctx.getDriver().get());
     }
 }

@@ -28,31 +28,31 @@ import org.openqa.selenium.safari.SafariDriver;
  */
 public enum Drivers implements Supplier<WebDriver> {
 
-    Firefox {
+    FIREFOX {
         @Override
         public WebDriver get() {
             return new FirefoxDriver();
         }
     },
-    IExplorer {
+    IEXPLORER {
         @Override
         public WebDriver get() {
             return new InternetExplorerDriver();
         }
     },
-    Chrome {
+    CHROME {
         @Override
         public WebDriver get() {
             return new InternetExplorerDriver();
         }
     },
-    Safari {
+    SAFARI {
         @Override
         public WebDriver get() {
             return new SafariDriver();
         }
     },
-    Headless{
+    HEADLESS{
         @Override
         public WebDriver get() {
             return new HtmlUnitDriver();

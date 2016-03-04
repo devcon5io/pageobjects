@@ -24,20 +24,15 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openqa.selenium.By;
 import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
@@ -45,12 +40,6 @@ import org.openqa.selenium.WebElement;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class WebElementLocatorTest {
-
-    @Mock
-    private WebDriver driver;
-
-    @Mock
-    private Description description;
 
     @Mock
     private SearchContext searchContext;
@@ -61,33 +50,12 @@ public class WebElementLocatorTest {
     @Mock
     private Locator locator;
 
+    @Rule
+    public SeleniumTestContext selenium = new SeleniumTestContext();
+
     private SeleniumContext ctx;
 
-    @Before
-    public void setUp() throws Exception {
 
-        this.ctx = SeleniumContext.builder().driver(() -> driver).baseUrl("http://localhost").build();
-    }
-
-    /**
-     * Executes the callable in the context of the selenium context provided by the test
-     * @param run
-     * @param <T>
-     * @return
-     * @throws Throwable
-     */
-    public <T> T execute(Callable<T> run) throws Throwable {
-
-        AtomicReference<T> result = new AtomicReference<>();
-        ctx.apply(new Statement() {
-
-            @Override
-            public void evaluate() throws Throwable {
-                result.set(run.call());
-            }
-        }, description).evaluate();
-        return result.get();
-    }
 
 
     @Test
@@ -96,11 +64,11 @@ public class WebElementLocatorTest {
         when(locator.by()).thenReturn(Locator.ByLocator.ID);
         when(locator.value()).thenReturn("testId");
         when(locator.timeout()).thenReturn(30);
-        when(driver.findElement(By.id("testId"))).thenReturn(webElement);
+        when(selenium.getMockDriver().findElement(By.id("testId"))).thenReturn(webElement);
         when(webElement.isDisplayed()).thenReturn(true);
 
         //act
-        WebElement element = execute(() -> WebElementLocator.locate(locator));
+        WebElement element = selenium.execute(() -> WebElementLocator.locate(locator));
 
         //assert
         assertNotNull(element);
@@ -155,7 +123,7 @@ public class WebElementLocatorTest {
     @Test
     public void testWaitForElement_noDriver_noElement() throws Throwable {
 
-        when(driver.findElement(By.id("test"))).thenReturn(webElement);
+        when(selenium.getMockDriver().findElement(By.id("test"))).thenReturn(webElement);
         when(webElement.isDisplayed()).thenReturn(true);
         assertFalse(WebElementLocator.waitForElement(By.id("test"), 10).isPresent());
     }
@@ -163,9 +131,9 @@ public class WebElementLocatorTest {
     @Test
     public void testWaitForElement_noContext() throws Throwable {
 
-        when(driver.findElement(By.id("test"))).thenReturn(webElement);
+        when(selenium.getMockDriver().findElement(By.id("test"))).thenReturn(webElement);
         when(webElement.isDisplayed()).thenReturn(true);
-        execute(() -> {
+        selenium.execute(() -> {
             assertTrue(WebElementLocator.waitForElement(By.id("test"), 10).isPresent());
             return null;
         });
@@ -174,9 +142,9 @@ public class WebElementLocatorTest {
     @Test(expected = TimeoutException.class)
     public void testWaitForElement_noContext_timeout() throws Throwable {
 
-        when(driver.findElement(By.id("test"))).thenReturn(webElement);
+        when(selenium.getMockDriver().findElement(By.id("test"))).thenReturn(webElement);
         when(webElement.isDisplayed()).thenReturn(false);
-        execute(() -> {
+        selenium.execute(() -> {
             assertTrue(WebElementLocator.waitForElement(By.id("test"), 1).isPresent());
             return null;
         });
