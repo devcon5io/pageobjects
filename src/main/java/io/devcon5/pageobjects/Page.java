@@ -17,7 +17,10 @@
 package io.devcon5.pageobjects;
 
 import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
+import static org.slf4j.LoggerFactory.getLogger;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -54,13 +57,20 @@ public interface Page extends ElementGroup {
      */
     static <T extends Page> T navigateTo(Class<T> pageType) {
         try {
-            T page = pageType.newInstance();
+            final T page = pageType.newInstance();
+            final Optional<TransactionSupport> tx = Optional.ofNullable(page instanceof TransactionSupport
+                                                                  ? (TransactionSupport) page
+                                                                  : null);
+            tx.ifPresent(TransactionSupport::startTx);
             page.navigateTo().ifPresent(WebElement::click);
             currentDriver().map(d -> new WebDriverWait(d, 150, 50))
                            .orElseThrow(() -> new IllegalStateException("Context not initialized"))
                            .until((Predicate<WebDriver>) d -> ((JavascriptExecutor) d).executeScript("return document.readyState")
                                                                                       .equals("complete"));
+            tx.ifPresent(TransactionSupport::stopTx);
+            final Instant start = Instant.now();
             page.locateElements();
+            getLogger("PERF").debug("time to locateElements = {}", Duration.between(start, Instant.now()));
             return page;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException();
