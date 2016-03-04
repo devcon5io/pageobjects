@@ -29,7 +29,7 @@ import org.openqa.selenium.WebDriver;
  *
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SeleniumContextBuilderTest {
+public class SeleniumControlBuilderTest {
 
     @Mock
     private WebDriver webDriver;
@@ -39,22 +39,30 @@ public class SeleniumContextBuilderTest {
         //prepare
 
         //act
-        SeleniumContext.SeleniumContextBuilder builder = SeleniumContext.builder();
+        SeleniumControl.SeleniumContextBuilder builder = SeleniumControl.builder();
 
         //assert
         assertNotNull(builder);
     }
 
     @Test
-    public void testBuild() throws Exception {
+    public void testBuild() throws Throwable {
         //prepare
 
         //act
-        SeleniumContext ctx = SeleniumContext.builder().baseUrl("myBaseUrl").driver(() -> webDriver).build();
-
+        SeleniumControl ctx = SeleniumControl.builder()
+                                             .baseUrl("myBaseUrl")
+                                             .driver(() -> webDriver)
+                                             .build();
         //assert
-        assertNotNull(ctx);
-        assertEquals("myBaseUrl", ctx.getBaseUrl());
-        assertEquals(webDriver, ctx.getDriver().get());
+        ctx.before();
+        try {
+            assertNotNull(ctx);
+            assertEquals("myBaseUrl", ctx.getBaseUrl());
+            assertEquals(webDriver, ctx.getDriver().get());
+        } finally {
+            ctx.after();
+        }
+
     }
 }

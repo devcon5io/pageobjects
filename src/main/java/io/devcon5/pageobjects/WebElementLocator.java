@@ -22,13 +22,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.slf4j.Logger;
-import com.google.common.base.Predicate;
 
 /**
  * Helper class to locate {@link org.openqa.selenium.WebElement}s by a {@link Locator} literal

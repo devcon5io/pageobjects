@@ -16,155 +16,87 @@
 
 package io.devcon5.pageobjects;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import io.inkstand.scribble.rules.ExternalResource;
 import org.openqa.selenium.WebDriver;
-import org.slf4j.Logger;
 
 /**
- * Context for running selenium based tests. After initialization, the context is kept as a thread local so that
- * PageObjects may access it to obtain the current state of the driver and test.
+ * The selenium context is a container for maintaining access to the current driver of
  */
-public class SeleniumContext extends ExternalResource {
+public class SeleniumContext {
 
-    private static final Logger LOG = getLogger(SeleniumContext.class);
+    private static ThreadLocal<Optional<SeleniumContext>> CONTEXT = ThreadLocal.withInitial(() -> Optional.empty());
 
-    private static ThreadLocal<SeleniumContext> CONTEXT = new ThreadLocal<>();
+    private Optional<WebDriver> driver = Optional.empty();
+    private final Supplier<WebDriver> provider;
+    private final AtomicReference<String> baseUrl = new AtomicReference<>();
 
-    private WebDriver driver;
-
-    private String baseUrl;
-
-    private BiConsumer<User, WebDriver> loginAction;
-
-    private Consumer<WebDriver> logoutAction;
-
-    private AtomicBoolean loggedIn = new AtomicBoolean(false);
-
-    private Optional<Consumer<WebDriver.Options>> driverInit;
-
-    private long startTime;
-
-    private long finishTime;
-
-    private Duration testDuration;
-
-    @Override
-    protected void before() throws Throwable {
-
-        driver.get(baseUrl);
-        driverInit.ifPresent(di -> di.accept(driver.manage()));
-        CONTEXT.set(this);
-        this.startTime = System.nanoTime();
+    public SeleniumContext(Supplier<WebDriver> provider){
+        Objects.nonNull(provider);
+        this.provider = provider;
     }
 
-    @Override
-    protected void after() {
-
-        this.finishTime = System.nanoTime();
-        getDriver().ifPresent(d -> d.quit());
-        CONTEXT.set(null);
-        this.testDuration = Duration.ofNanos(this.finishTime - this.startTime);
-        LOG.info("Test executed in {} s", this.testDuration.getSeconds());
+    public void init(){
+        driver = Optional.of(provider.get());
+        CONTEXT.set(Optional.of(this));
     }
 
-    @Override
-    protected void beforeClass() throws Throwable {
-
-        before();
-    }
-
-    @Override
-    protected void afterClass() {
-
-        after();
+    public void destroy(){
+        driver.ifPresent(WebDriver::quit);
+        CONTEXT.set(Optional.empty());
     }
 
     /**
-     * Performs the login action with the specified user
-     *
-     * @param user
-     *         the user to login
-     */
-    public final void login(User user) {
-
-        currentDriver().ifPresent(d -> {
-            loginAction.accept(user, d);
-            loggedIn.set(true);
-        });
-    }
-
-    /**
-     * Performs the logout action
-     */
-    public final void logout() {
-
-        currentDriver().ifPresent(d -> {
-            this.logoutAction.accept(d);
-            loggedIn.set(false);
-        });
-
-    }
-
-    /**
-     * Indicates if a user is logged in to the application
-     *
+     * Global accessor to the current context which is stored in a thread local.
      * @return
-     */
-    public boolean isLoggedIn() {
-
-        return loggedIn.get();
-    }
-
-
-
-    /**
-     * Returns the driver of this context.
-     *
-     * @return may be null if the test is not running.
-     */
-    public Optional<WebDriver> getDriver() {
-
-        return Optional.ofNullable(driver);
-    }
-
-    /**
-     * The base URL of the application to test
-     *
-     * @return the string representing the base URL. All relative URLs (i.e. in the page object model) must be relative
-     * to this page
-     */
-    public String getBaseUrl() {
-
-        return baseUrl;
-    }
-
-    /**
-     * Returns the current context. The context is only available during test execution
-     *
-     * @return an Optional holding the current context.
+     *  the context for the current thread.
      */
     public static Optional<SeleniumContext> currentContext() {
 
-        return Optional.ofNullable(CONTEXT.get());
+        return CONTEXT.get();
     }
 
     /**
-     * Returns the duration of the test execution.
-     *
-     * @return the duration of the test execution
+     * Global accessor to the current web driver, which is stored in a thread local.
+     * @return
+     *  the current web driver
      */
-    public Duration getTestDuration() {
+    public static Optional<WebDriver> currentDriver() {
 
-        return Optional.ofNullable(this.testDuration).orElseThrow(() -> new IllegalStateException("Test not finished"));
+        return currentContext().flatMap(ctx -> ctx.getDriver());
+    }
+
+    /**
+     * The web driver of the context
+     * @return
+     *  a Selenium WebDriver
+     */
+    public Optional<WebDriver> getDriver() {
+
+        return driver;
+    }
+
+    /**
+     * The base URL for the current context used to resolve relative URLs.
+     * @return
+     *  the current BaseUrl
+     */
+    public String getBaseUrl() {
+
+        return this.baseUrl.get();
+    }
+
+    /**
+     * Sets the base URL for the current context used to resolve relative URLs.
+     * @param baseUrl
+     *  the new base URL
+     */
+    public void setBaseUrl(String baseUrl){
+        Objects.nonNull(baseUrl);
+        this.baseUrl.set(baseUrl);
     }
 
     /**
@@ -190,88 +122,5 @@ public class SeleniumContext extends ExternalResource {
             }
             return buf.toString();
         }).orElse(relativePath);
-    }
-
-    /**
-     * Returns the currentContext driver. If this method is invoked outside of a test execution, the returned Optional
-     * is empty
-     *
-     * @return the optional of a driver
-     */
-    public static Optional<WebDriver> currentDriver() {
-
-        return currentContext().flatMap(ctx -> ctx.getDriver());
-    }
-
-    /**
-     * Creates a new context builder for fluent setup and instantiation.
-     *
-     * @return a new builder
-     */
-    public static SeleniumContextBuilder builder() {
-
-        return new SeleniumContextBuilder();
-    }
-
-    /**
-     * Builder for creating a Selenium test context
-     */
-    public static class SeleniumContextBuilder {
-
-        private Supplier<WebDriver> driver;
-
-        private String baseUrl;
-
-        private BiConsumer<User, WebDriver> loginAction;
-
-        private Consumer<WebDriver> logoutAction;
-
-        private Consumer<WebDriver.Options> optionsInitializer;
-
-        private SeleniumContextBuilder() {
-
-        }
-
-        public SeleniumContextBuilder driver(Supplier<WebDriver> driver) {
-
-            this.driver = driver;
-            return this;
-        }
-
-        public SeleniumContextBuilder baseUrl(String baseUrl) {
-
-            this.baseUrl = baseUrl;
-            return this;
-        }
-
-        public SeleniumContextBuilder loginAction(BiConsumer<User, WebDriver> loginAction) {
-
-            this.loginAction = loginAction;
-            return this;
-        }
-
-        public SeleniumContextBuilder logoutAction(Consumer<WebDriver> logoutAction) {
-
-            this.logoutAction = logoutAction;
-            return this;
-        }
-
-        public SeleniumContextBuilder driverOptions(Consumer<WebDriver.Options> optionsInitializer) {
-
-            this.optionsInitializer = optionsInitializer;
-            return this;
-        }
-
-        public SeleniumContext build() {
-
-            SeleniumContext ctx = new SeleniumContext();
-            ctx.baseUrl = this.baseUrl;
-            ctx.driver = this.driver.get();
-            ctx.driverInit = Optional.ofNullable(this.optionsInitializer);
-            ctx.loginAction = this.loginAction;
-            ctx.logoutAction = this.logoutAction;
-            return ctx;
-
-        }
     }
 }

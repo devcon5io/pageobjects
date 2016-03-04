@@ -25,6 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Optional;
 import java.util.function.Function;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
@@ -72,14 +73,14 @@ public @interface Locator {
                         });
             }
         },
-        ID(org.openqa.selenium.By::id),
-        LINK_TEXT(org.openqa.selenium.By::linkText),
-        PARTIAL_LINK_TEXT(org.openqa.selenium.By::partialLinkText),
-        NAME(org.openqa.selenium.By::name),
-        TAG(org.openqa.selenium.By::tagName),
-        XPATH(org.openqa.selenium.By::xpath),
-        CLASS(org.openqa.selenium.By::className),
-        CSS(org.openqa.selenium.By::cssSelector);
+        ID(By::id),
+        LINK_TEXT(By::linkText),
+        PARTIAL_LINK_TEXT(By::partialLinkText),
+        NAME(By::name),
+        TAG(By::tagName),
+        XPATH(By::xpath),
+        CLASS(By::className),
+        CSS(By::cssSelector);
 
         private transient final Optional<Function<String, org.openqa.selenium.By>> mapper;
 

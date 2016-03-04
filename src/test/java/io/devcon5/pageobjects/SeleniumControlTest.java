@@ -36,13 +36,13 @@ import org.openqa.selenium.WebDriver;
  *
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SeleniumContextTest {
+public class SeleniumControlTest {
 
     /**
      * The class under test
      */
     @InjectMocks
-    private SeleniumContext subject;
+    private SeleniumControl subject;
 
     @Mock
     private Description description;
@@ -55,7 +55,7 @@ public class SeleniumContextTest {
     @Before
     public void setUp() throws Exception {
 
-        subject = SeleniumContext.builder().baseUrl(basePath).driver(() -> webDriver).build();
+        subject = SeleniumControl.builder().baseUrl(basePath).driver(() -> webDriver).build();
     }
 
     @Test
@@ -63,7 +63,7 @@ public class SeleniumContextTest {
         //prepare
         final AtomicReference<User> user = new AtomicReference<>();
         final AtomicBoolean loggedIn = new AtomicBoolean();
-        final SeleniumContext ctx = SeleniumContext.builder()
+        final SeleniumControl ctrl = SeleniumControl.builder()
                                                    .baseUrl(basePath)
                                                    .driver(() -> webDriver)
                                                    .loginAction((u, d) -> {
@@ -79,15 +79,14 @@ public class SeleniumContextTest {
 
             @Override
             public void evaluate() throws Throwable {
-
                 SeleniumContext.currentContext().ifPresent(ctx -> {
-                    ctx.login(new User("test", "pw"));
-                    loggedIn.set(ctx.isLoggedIn());
+                    ctrl.login(new User("test", "pw"));
+                    loggedIn.set(ctrl.isLoggedIn());
                 });
             }
         };
         //act
-        ctx.apply(stmt, description).evaluate();
+        ctrl.apply(stmt, description).evaluate();
 
         //assert
         assertTrue(loggedIn.get());
@@ -99,7 +98,7 @@ public class SeleniumContextTest {
     public void testLogout() throws Throwable {
         //prepare
         final AtomicBoolean loggedIn = new AtomicBoolean();
-        final SeleniumContext ctx = SeleniumContext.builder()
+        final SeleniumControl ctrl = SeleniumControl.builder()
                                                    .baseUrl(basePath)
                                                    .driver(() -> webDriver)
                                                    .loginAction((u, d) -> {
@@ -113,14 +112,14 @@ public class SeleniumContextTest {
             public void evaluate() throws Throwable {
 
                 SeleniumContext.currentContext().ifPresent(ctx -> {
-                    ctx.login(new User("test", "pw"));
-                    ctx.logout();
-                    loggedIn.set(ctx.isLoggedIn());
+                    ctrl.login(new User("test", "pw"));
+                    ctrl.logout();
+                    loggedIn.set(ctrl.isLoggedIn());
                 });
             }
         };
         //act
-        ctx.apply(stmt, description).evaluate();
+        ctrl.apply(stmt, description).evaluate();
 
         //assert
         assertFalse(loggedIn.get());
@@ -133,10 +132,29 @@ public class SeleniumContextTest {
     }
 
     @Test
-    public void testGetDriver() throws Exception {
+    public void testGetDriver_outsideTest() throws Exception {
 
         //assert
-        assertEquals(webDriver, subject.getDriver().get());
+        assertFalse(subject.getDriver().isPresent());
+    }
+
+    @Test
+    public void testGetDriver_insideTest() throws Throwable {
+
+        //prepare
+        Statement stmt = new Statement() {
+
+            @Override
+            public void evaluate() throws Throwable {
+                assertEquals(webDriver, subject.getDriver().get());
+
+            }
+        };
+        subject.apply(stmt, description).evaluate();
+
+        //assert
+
+
     }
 
     @Test
@@ -149,7 +167,7 @@ public class SeleniumContextTest {
     @Test
     public void testCurrentContext_outsideTest_notSet() throws Exception {
 
-        assertFalse(SeleniumContext.currentContext().isPresent());
+        assertFalse(subject.currentContext().isPresent());
     }
 
     @Test
@@ -162,7 +180,7 @@ public class SeleniumContextTest {
             @Override
             public void evaluate() throws Throwable {
 
-                ctx.set(SeleniumContext.currentContext().get());
+                ctx.set(subject.currentContext().get());
             }
         };
 
@@ -176,8 +194,8 @@ public class SeleniumContextTest {
     @Test
     public void testCurrentDriver_outsideTest_notSet() throws Exception {
 
-        assertNotNull(SeleniumContext.currentDriver());
-        assertFalse(SeleniumContext.currentDriver().isPresent());
+        assertNotNull(subject.currentDriver());
+        assertFalse(subject.currentDriver().isPresent());
     }
 
     @Test
@@ -190,7 +208,7 @@ public class SeleniumContextTest {
             @Override
             public void evaluate() throws Throwable {
 
-                driver.set(SeleniumContext.currentDriver().get());
+                driver.set(subject.currentDriver().get());
             }
         };
 
@@ -283,7 +301,7 @@ public class SeleniumContextTest {
     private void testResolvePathInsideTest(final String basePath, final String relPath, final String expected)
             throws Throwable {
 
-        SeleniumContext ctx = SeleniumContext.builder().baseUrl(basePath).driver(() -> webDriver).build();
+        SeleniumControl ctx = SeleniumControl.builder().baseUrl(basePath).driver(() -> webDriver).build();
         AtomicReference<String> path = new AtomicReference<>();
 
         Statement stmt = new Statement() {

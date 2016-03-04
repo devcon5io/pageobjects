@@ -20,13 +20,13 @@ import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
 import static io.devcon5.pageobjects.tx.TransactionHelper.getClassTxName;
 
 import java.util.Optional;
+
+import com.google.common.base.Predicate;
+import io.devcon5.pageobjects.tx.Transactional;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import com.google.common.base.Predicate;
-
-import io.devcon5.pageobjects.tx.Transactional;
 
 /**
  * Interface to declare a page of an application
