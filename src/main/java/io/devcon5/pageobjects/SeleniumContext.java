@@ -35,7 +35,7 @@ public class SeleniumContext {
     private final AtomicReference<String> baseUrl = new AtomicReference<>();
 
     public SeleniumContext(Supplier<WebDriver> provider){
-        Objects.nonNull(provider);
+        Objects.requireNonNull(provider, "WebDriver must not be null");
         this.provider = provider;
     }
 
@@ -46,6 +46,7 @@ public class SeleniumContext {
 
     public void destroy(){
         driver.ifPresent(WebDriver::quit);
+        driver = Optional.empty();
         CONTEXT.set(Optional.empty());
     }
 
@@ -95,7 +96,7 @@ public class SeleniumContext {
      *  the new base URL
      */
     public void setBaseUrl(String baseUrl){
-        Objects.nonNull(baseUrl);
+        Objects.requireNonNull(baseUrl, "BaseUrl must not be empty");
         this.baseUrl.set(baseUrl);
     }
 

@@ -64,21 +64,22 @@ public class SeleniumControlTest {
         final AtomicReference<User> user = new AtomicReference<>();
         final AtomicBoolean loggedIn = new AtomicBoolean();
         final SeleniumControl ctrl = SeleniumControl.builder()
-                                                   .baseUrl(basePath)
-                                                   .driver(() -> webDriver)
-                                                   .loginAction((u, d) -> {
-                                                       user.set(u);
-                                                       try {
-                                                           Thread.sleep(50);
-                                                       } catch (InterruptedException e) {
-                                                           //
-                                                       }
-                                                   })
-                                                   .build();
+                                                    .baseUrl(basePath)
+                                                    .driver(() -> webDriver)
+                                                    .loginAction((u, d) -> {
+                                                        user.set(u);
+                                                        try {
+                                                            Thread.sleep(50);
+                                                        } catch (InterruptedException e) {
+                                                            //
+                                                        }
+                                                    })
+                                                    .build();
         final Statement stmt = new Statement() {
 
             @Override
             public void evaluate() throws Throwable {
+
                 SeleniumContext.currentContext().ifPresent(ctx -> {
                     ctrl.login(new User("test", "pw"));
                     loggedIn.set(ctrl.isLoggedIn());
@@ -99,13 +100,13 @@ public class SeleniumControlTest {
         //prepare
         final AtomicBoolean loggedIn = new AtomicBoolean();
         final SeleniumControl ctrl = SeleniumControl.builder()
-                                                   .baseUrl(basePath)
-                                                   .driver(() -> webDriver)
-                                                   .loginAction((u, d) -> {
-                                                   })
-                                                   .logoutAction((d) -> {
-                                                   })
-                                                   .build();
+                                                    .baseUrl(basePath)
+                                                    .driver(() -> webDriver)
+                                                    .loginAction((u, d) -> {
+                                                    })
+                                                    .logoutAction((d) -> {
+                                                    })
+                                                    .build();
         final Statement stmt = new Statement() {
 
             @Override
@@ -146,15 +147,13 @@ public class SeleniumControlTest {
 
             @Override
             public void evaluate() throws Throwable {
+
                 assertEquals(webDriver, subject.getDriver().get());
 
             }
         };
         subject.apply(stmt, description).evaluate();
-
         //assert
-
-
     }
 
     @Test
@@ -243,80 +242,6 @@ public class SeleniumControlTest {
         //assert
         Duration dur = subject.getTestDuration();
         assertTrue(dur.getNano() >= 50);
-    }
-
-    @Test
-    public void testResolve_outsideTest_equals() throws Exception {
-        //prepare
-        //act
-        String path = SeleniumContext.resolve("relativePath");
-        //assert
-        assertEquals("relativePath", path);
-    }
-
-    @Test
-    public void testResolve_insideTest_baseUrlTrailingSlash() throws Throwable {
-        //prepare
-        String basePath = "http://myBaseUrl/";
-        String relPath = "relativePath";
-        String expected = "http://myBaseUrl/relativePath";
-
-        testResolvePathInsideTest(basePath, relPath, expected);
-
-    }
-
-    @Test
-    public void testResolve_insideTest_relPathLeadingSlash() throws Throwable {
-        //prepare
-        String basePath = "http://myBaseUrl";
-        String relPath = "/relativePath";
-        String expected = "http://myBaseUrl/relativePath";
-
-        testResolvePathInsideTest(basePath, relPath, expected);
-
-    }
-
-    @Test
-    public void testResolve_insideTest_baseUrlTrailing_and_relPathLeadingSlash() throws Throwable {
-        //prepare
-        String basePath = "http://myBaseUrl/";
-        String relPath = "/relativePath";
-        String expected = "http://myBaseUrl/relativePath";
-
-        testResolvePathInsideTest(basePath, relPath, expected);
-
-    }
-
-    @Test
-    public void testResolve_insideTest_noSlash() throws Throwable {
-        //prepare
-        String basePath = "http://myBaseUrl";
-        String relPath = "relativePath";
-        String expected = "http://myBaseUrl/relativePath";
-
-        testResolvePathInsideTest(basePath, relPath, expected);
-
-    }
-
-    private void testResolvePathInsideTest(final String basePath, final String relPath, final String expected)
-            throws Throwable {
-
-        SeleniumControl ctx = SeleniumControl.builder().baseUrl(basePath).driver(() -> webDriver).build();
-        AtomicReference<String> path = new AtomicReference<>();
-
-        Statement stmt = new Statement() {
-
-            @Override
-            public void evaluate() throws Throwable {
-
-                path.set(SeleniumContext.resolve(relPath));
-            }
-        };
-        //act
-        ctx.apply(stmt, description).evaluate();
-
-        //assert
-        assertEquals(expected, path.get());
     }
 
 }
