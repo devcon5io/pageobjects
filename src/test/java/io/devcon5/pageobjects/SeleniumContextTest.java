@@ -93,7 +93,6 @@ public class SeleniumContextTest {
         assertTrue(loggedIn.get());
         assertEquals("test", user.get().getUsername());
         assertEquals("pw", user.get().getPassword());
-        assertTrue(ctx.getLoginTime().compareTo(Duration.ofMillis(45)) >= 0);
     }
 
     @Test
@@ -131,17 +130,6 @@ public class SeleniumContextTest {
     public void testIsLoggedIn_noLogin_false() throws Exception {
 
         assertFalse(subject.isLoggedIn());
-    }
-
-    @Test
-    public void testGetLoginTime_outsideTest() throws Exception {
-        //prepare
-
-        //act
-        Duration dur = subject.getLoginTime();
-
-        //assert
-        assertNull(dur);
     }
 
     @Test

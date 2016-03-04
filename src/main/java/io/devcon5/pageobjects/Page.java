@@ -17,13 +17,15 @@
 package io.devcon5.pageobjects;
 
 import static io.devcon5.pageobjects.SeleniumContext.currentDriver;
+import static io.devcon5.pageobjects.measure.ExecutionStopWatch.runMeasured;
+import static io.devcon5.pageobjects.tx.TransactionHelper.getClassTxName;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
 
 import com.google.common.base.Predicate;
+import io.devcon5.pageobjects.tx.Transactional;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -38,11 +40,15 @@ public interface Page extends ElementGroup {
      * Default implementation navigates to the url of the page specified by locator annotation. If the page as another
      * mechanism of navigating to it, this method must be overriden.
      */
-    default Optional<WebElement> navigateTo() {
-
-        return currentDriver().map(WebDriver::navigate)
-                              .flatMap(nav -> Optional.ofNullable(this.getClass().getDeclaredAnnotation(Locator.class))
-                                                      .flatMap(l -> l.by().locate(l.value())));
+    default void loadPage() {
+        currentDriver().map(driver -> {
+            Optional.ofNullable(this.getClass().getDeclaredAnnotation(Locator.class))
+                    .flatMap(l -> l.by().locate(l.value()))
+                    .ifPresent(WebElement::click);
+            new WebDriverWait(driver, 150, 50).until((Predicate<WebDriver>) d -> ((JavascriptExecutor) d).executeScript(
+                    "return document.readyState").equals("complete"));
+            return Void.TYPE;
+        }).orElseThrow(() -> new IllegalStateException("Context not initialized"));
     }
 
     /**
@@ -57,25 +63,20 @@ public interface Page extends ElementGroup {
      */
     static <T extends Page> T navigateTo(Class<T> pageType) {
 
+        final T page = PageLoader.loadPage(pageType);
+        final Optional<Transactional> tx = Optional.ofNullable(page instanceof Transactional
+                                                               ? (Transactional) page
+                                                               : null);
+        tx.ifPresent(ts -> getClassTxName(pageType).ifPresent(ts::txBegin));
         try {
-            final T page = pageType.newInstance();
-            final Optional<TransactionSupport> tx = Optional.ofNullable(page instanceof TransactionSupport
-                                                                  ? (TransactionSupport) page
-                                                                  : null);
-            tx.ifPresent(TransactionSupport::startTx);
-            page.navigateTo().ifPresent(WebElement::click);
-            currentDriver().map(d -> new WebDriverWait(d, 150, 50))
-                           .orElseThrow(() -> new IllegalStateException("Context not initialized"))
-                           .until((Predicate<WebDriver>) d -> ((JavascriptExecutor) d).executeScript("return document.readyState")
-                                                                                      .equals("complete"));
-            tx.ifPresent(TransactionSupport::stopTx);
-            final Instant start = Instant.now();
-            page.locateElements();
-            getLogger("PERF").debug("time to locateElements = {}", Duration.between(start, Instant.now()));
-            return page;
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            page.loadPage();
+        } finally {
+            tx.ifPresent(ts -> getClassTxName(pageType).ifPresent(ts::txEnd));
         }
+
+        final Duration dur = runMeasured(page::locateElements).getDuration();
+        getLogger("PERF").debug("time to locateElements = {}", dur);
+        return page;
 
     }
 

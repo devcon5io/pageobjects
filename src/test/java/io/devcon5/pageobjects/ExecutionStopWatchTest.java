@@ -5,6 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.time.Duration;
+
+import io.devcon5.pageobjects.measure.ExecutionStopWatch;
+import io.devcon5.pageobjects.measure.MeasuredExecutionResult;
 import org.junit.Test;
 
 /**
@@ -13,16 +16,16 @@ import org.junit.Test;
 public class ExecutionStopWatchTest {
 
     @Test
-    public void testAround_runnable() throws Exception {
+    public void testRunMeasured_runnable() throws Exception {
 
 
         //act
-        ExecutionStopWatch watch = ExecutionStopWatch.measure(() -> sleep(100));
+        MeasuredExecutionResult watch = ExecutionStopWatch.runMeasured(() -> sleep(100));
 
         //assert
         //5 millis tolerance
         assertTrue(watch.getDuration().plusMillis(5).compareTo(Duration.ofMillis(100)) >= 0);
-        assertEquals(Void.TYPE, watch.getResult().get());
+        assertEquals(Void.TYPE, watch.getReturnValue().get());
 
     }
 
@@ -31,14 +34,14 @@ public class ExecutionStopWatchTest {
 
 
         //act
-        ExecutionStopWatch watch = ExecutionStopWatch.measure(() -> {
+        MeasuredExecutionResult watch = ExecutionStopWatch.runMeasured(() -> {
             sleep(100);
             return null;
         });
 
         //assert
         assertTrue(watch.getDuration().plusMillis(5).compareTo(Duration.ofMillis(100)) >= 0);
-        assertFalse(watch.getResult().isPresent());
+        assertFalse(watch.getReturnValue().isPresent());
     }
 
     @Test
@@ -46,14 +49,14 @@ public class ExecutionStopWatchTest {
 
 
         //act
-        ExecutionStopWatch watch = ExecutionStopWatch.measure(() -> {
+        MeasuredExecutionResult<String> watch = ExecutionStopWatch.runMeasured(() -> {
             sleep(100);
             return "out";
         });
 
         //assert
         assertTrue(watch.getDuration().plusMillis(5).compareTo(Duration.ofMillis(100)) >= 0);
-        assertEquals("out", watch.getResult().orElse("FAIL"));
+        assertEquals("out", watch.getReturnValue().orElse("FAIL"));
     }
 
     private void sleep(long millis) {

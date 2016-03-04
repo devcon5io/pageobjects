@@ -24,10 +24,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.openqa.selenium.WebDriver;
-import org.slf4j.Logger;
 
 import io.inkstand.scribble.rules.ExternalResource;
+import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
 
 /**
  * Context for running selenium based tests. After initialization, the context is kept as a thread local so that
@@ -49,8 +49,6 @@ public class SeleniumContext extends ExternalResource {
 
     private AtomicBoolean loggedIn = new AtomicBoolean(false);
 
-    private Duration loginTime;
-
     private Optional<Consumer<WebDriver.Options>> driverInit;
 
     private long startTime;
@@ -61,6 +59,7 @@ public class SeleniumContext extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
+
         driver.get(baseUrl);
         driverInit.ifPresent(di -> di.accept(driver.manage()));
         CONTEXT.set(this);
@@ -69,6 +68,7 @@ public class SeleniumContext extends ExternalResource {
 
     @Override
     protected void after() {
+
         this.finishTime = System.nanoTime();
         getDriver().ifPresent(d -> d.quit());
         CONTEXT.set(null);
@@ -78,11 +78,13 @@ public class SeleniumContext extends ExternalResource {
 
     @Override
     protected void beforeClass() throws Throwable {
+
         before();
     }
 
     @Override
     protected void afterClass() {
+
         after();
     }
 
@@ -93,16 +95,18 @@ public class SeleniumContext extends ExternalResource {
      *         the user to login
      */
     public final void login(User user) {
-        this.loginTime = ExecutionStopWatch.measure(() -> currentDriver().ifPresent(d -> {
+
+        currentDriver().ifPresent(d -> {
             loginAction.accept(user, d);
             loggedIn.set(true);
-        })).getDuration();
+        });
     }
 
     /**
      * Performs the logout action
      */
     public final void logout() {
+
         currentDriver().ifPresent(d -> {
             this.logoutAction.accept(d);
             loggedIn.set(false);
@@ -116,17 +120,11 @@ public class SeleniumContext extends ExternalResource {
      * @return
      */
     public boolean isLoggedIn() {
+
         return loggedIn.get();
     }
 
-    /**
-     * Returns the duration of the login process
-     *
-     * @return
-     */
-    public Duration getLoginTime() {
-        return loginTime;
-    }
+
 
     /**
      * Returns the driver of this context.
@@ -134,6 +132,7 @@ public class SeleniumContext extends ExternalResource {
      * @return may be null if the test is not running.
      */
     public Optional<WebDriver> getDriver() {
+
         return Optional.ofNullable(driver);
     }
 
@@ -144,6 +143,7 @@ public class SeleniumContext extends ExternalResource {
      * to this page
      */
     public String getBaseUrl() {
+
         return baseUrl;
     }
 
@@ -153,15 +153,17 @@ public class SeleniumContext extends ExternalResource {
      * @return an Optional holding the current context.
      */
     public static Optional<SeleniumContext> currentContext() {
+
         return Optional.ofNullable(CONTEXT.get());
     }
 
     /**
      * Returns the duration of the test execution.
-     * @return
-     *  the duration of the test execution
+     *
+     * @return the duration of the test execution
      */
     public Duration getTestDuration() {
+
         return Optional.ofNullable(this.testDuration).orElseThrow(() -> new IllegalStateException("Test not finished"));
     }
 
@@ -174,20 +176,20 @@ public class SeleniumContext extends ExternalResource {
      * @return the absolute path of the application's base URL and the relative path
      */
     public static String resolve(String relativePath) {
-        return currentContext().map(SeleniumContext::getBaseUrl)
-                               .map(base -> {
-                                   final StringBuilder buf = new StringBuilder(16);
-                                   buf.append(base);
-                                   if (base.charAt(base.length() - 1) != '/') {
-                                       buf.append('/');
-                                   }
-                                   if (relativePath.startsWith("/")) {
-                                       buf.append(relativePath.substring(1));
-                                   } else {
-                                       buf.append(relativePath);
-                                   }
-                                   return buf.toString();
-                               }).orElse(relativePath);
+
+        return currentContext().map(SeleniumContext::getBaseUrl).map(base -> {
+            final StringBuilder buf = new StringBuilder(16);
+            buf.append(base);
+            if (base.charAt(base.length() - 1) != '/') {
+                buf.append('/');
+            }
+            if (relativePath.startsWith("/")) {
+                buf.append(relativePath.substring(1));
+            } else {
+                buf.append(relativePath);
+            }
+            return buf.toString();
+        }).orElse(relativePath);
     }
 
     /**
@@ -197,6 +199,7 @@ public class SeleniumContext extends ExternalResource {
      * @return the optional of a driver
      */
     public static Optional<WebDriver> currentDriver() {
+
         return currentContext().flatMap(ctx -> ctx.getDriver());
     }
 
@@ -206,6 +209,7 @@ public class SeleniumContext extends ExternalResource {
      * @return a new builder
      */
     public static SeleniumContextBuilder builder() {
+
         return new SeleniumContextBuilder();
     }
 
@@ -225,34 +229,41 @@ public class SeleniumContext extends ExternalResource {
         private Consumer<WebDriver.Options> optionsInitializer;
 
         private SeleniumContextBuilder() {
+
         }
 
         public SeleniumContextBuilder driver(Supplier<WebDriver> driver) {
+
             this.driver = driver;
             return this;
         }
 
         public SeleniumContextBuilder baseUrl(String baseUrl) {
+
             this.baseUrl = baseUrl;
             return this;
         }
 
         public SeleniumContextBuilder loginAction(BiConsumer<User, WebDriver> loginAction) {
+
             this.loginAction = loginAction;
             return this;
         }
 
         public SeleniumContextBuilder logoutAction(Consumer<WebDriver> logoutAction) {
+
             this.logoutAction = logoutAction;
             return this;
         }
 
         public SeleniumContextBuilder driverOptions(Consumer<WebDriver.Options> optionsInitializer) {
+
             this.optionsInitializer = optionsInitializer;
             return this;
         }
 
         public SeleniumContext build() {
+
             SeleniumContext ctx = new SeleniumContext();
             ctx.baseUrl = this.baseUrl;
             ctx.driver = this.driver.get();
