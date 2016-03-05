@@ -149,7 +149,7 @@ public final class PageObjectsInjector {
             target.setAccessible(true);
             injectFields(nestedGroup);
             if(Transactional.class.isAssignableFrom(target.getDeclaringClass())){
-                nestedGroup = TransactionHelper.addTransactionSupport(nestedGroup);
+                nestedGroup = TransactionHelper.addTransactionSupport((Transactional)nestedGroup);
             }
             target.set(parent, nestedGroup);
         } catch (IllegalAccessException e) {

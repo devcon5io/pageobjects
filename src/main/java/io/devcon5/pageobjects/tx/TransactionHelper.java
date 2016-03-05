@@ -19,11 +19,8 @@ package io.devcon5.pageobjects.tx;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.lang.reflect.Method;
-import java.time.Instant;
 import java.util.Optional;
 
-import io.devcon5.pageobjects.ElementGroup;
-import io.devcon5.pageobjects.measure.ResponseTimeCollector;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 
@@ -40,42 +37,42 @@ public final class TransactionHelper {
      * Adds transaction support to the page. The transaction support captures execution time of methods annotated with
      * {@link io.devcon5.pageobjects.tx.Transaction}
      *
-     * @param elementGroup
-     *         the element group, i.e. a page
      * @param <T>
      *
+     * @param transactional
+     *         the transactional element to be enhanced.
      * @return
      */
     @SuppressWarnings("unchecked")
-    public static <T extends ElementGroup> T addTransactionSupport(T elementGroup) {
-        final Class<T> type = (Class<T>) elementGroup.getClass();
-        return (T) Enhancer.create(elementGroup.getClass(), (MethodInterceptor) (obj, method, args, proxy) -> {
-            /*
-            if(type.getMethod("getClass").equals(method)){
-                return type;
-            }
-            */
-            //Capture the time only if a response time collector is present, and the method
-            //is associated with a transaction
-            final Optional<ResponseTimeCollector> rtc = ResponseTimeCollector.current();
-            final Optional<String> txName = rtc.flatMap(r -> getTxName(elementGroup, method));
-            final Optional<Instant> start = txName.map(n -> Instant.now());
+    public static <T extends Transactional> T addTransactionSupport(Transactional transactional) {
+        return (T) Enhancer.create(transactional.getClass(), (MethodInterceptor) (obj, method, args, proxy) -> {
+            final Optional<String> txName = getTxName(transactional, method);
             try {
-                Object result = method.invoke(elementGroup, args);
+                txName.ifPresent(transactional::txBegin);
+                Object result = method.invoke(transactional, args);
+                //dynamically enhance return values, if they are transactional and not yet enhanced
+                //this is required, i.e. if method return 'this' or create new objects which will
+                //not be enhanced
                 if (!isCGLibProxy(result) && result instanceof Transactional) {
-                    result = addTransactionSupport(elementGroup);
+                    result = addTransactionSupport(transactional);
                 }
                 return result;
             } finally {
-                final Optional<Instant> end = txName.map(n -> Instant.now());
-                txName.ifPresent(name -> rtc.ifPresent(r -> r.captureTx(name, start.get(), end.get())));
+                txName.ifPresent(transactional::txEnd);
             }
         });
     }
 
-    private static boolean isCGLibProxy(Object result) {
-        return result != null
-                && result.getClass()
+    /**
+     * Determines whether an instance is a CGLib Proxy.
+     * @param object
+     *  the object to check
+     * @return
+     *  true if the object is a CGLib proxy
+     */
+    private static boolean isCGLibProxy(Object object) {
+        return object != null
+                && object.getClass()
                          .getName()
                          .contains("$$EnhancerByCGLIB$$");
     }
@@ -90,7 +87,7 @@ public final class TransactionHelper {
      *
      * @return the name of the transaction or the empty optional if the method denotes no transaction
      */
-    private static Optional<String> getTxName(Object object, final Method method) {
+    public static Optional<String> getTxName(Object object, final Method method) {
 
         return Optional.ofNullable(method.getAnnotation(Transaction.class))
                        .map(t -> getClassTxName(object.getClass())

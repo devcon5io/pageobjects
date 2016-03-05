@@ -57,6 +57,7 @@ public class TransactionalTest {
     public void tearDown() throws Exception {
         rtc.stopCollecting();
         ResponseTimes.resetResponseTimeHandlers();
+        ResponseTimes.clear();
     }
 
     @Test

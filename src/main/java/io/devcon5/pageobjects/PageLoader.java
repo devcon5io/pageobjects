@@ -40,7 +40,7 @@ public final class PageLoader {
         try {
             T page = pageType.newInstance();
             if (Transactional.class.isAssignableFrom(pageType)) {
-                page = addTransactionSupport(page);
+                page = addTransactionSupport((Transactional)page);
             }
             return page;
 
