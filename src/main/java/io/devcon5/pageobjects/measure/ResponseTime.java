@@ -32,7 +32,7 @@ public class ResponseTime extends TimeMeasure {
     private final String transaction;
 
     public ResponseTime(String transaction, Instant start) {
-        this(UUID.randomUUID(), transaction, start, Duration.ZERO);
+        this(UUID.randomUUID(), transaction, start, NEGATIVE);
     }
 
     public ResponseTime(final String txName, final Instant start, final Duration duration) {

@@ -25,6 +25,7 @@ import java.time.Instant;
  */
 public class TimeMeasure {
 
+    protected static final Duration NEGATIVE = Duration.ZERO.minus(Duration.ofMillis(1));
     private final Instant start;
     private final Duration duration;
 
@@ -35,7 +36,7 @@ public class TimeMeasure {
     }
 
     public TimeMeasure(final Instant start) {
-        this(start, Duration.ZERO);
+        this(start, NEGATIVE);
     }
 
     public Instant getStart() {
@@ -49,7 +50,7 @@ public class TimeMeasure {
     }
 
     public boolean isFinished(){
-        return duration != Duration.ZERO;
+        return duration != NEGATIVE;
     }
 
 }
