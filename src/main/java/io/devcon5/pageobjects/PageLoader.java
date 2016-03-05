@@ -26,6 +26,8 @@ import io.devcon5.pageobjects.tx.Transactional;
  */
 public final class PageLoader {
 
+    private PageLoader(){}
+
     /**
      * Loads a page with optional transaction support.
      * @param pageType

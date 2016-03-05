@@ -88,11 +88,12 @@ public class ResponseTime extends TimeMeasure {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ResponseTime{");
-        sb.append("transaction='").append(transaction).append('\'');
-        sb.append(", start=").append(getStart());
-        sb.append(", duration=").append(getDuration());
-        sb.append('}');
+        final StringBuilder sb = new StringBuilder(64)
+            .append("ResponseTime{")
+            .append("transaction='").append(transaction).append('\'')
+            .append(", start=").append(getStart())
+            .append(", duration=").append(getDuration())
+            .append('}');
         return sb.toString();
     }
 

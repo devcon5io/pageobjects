@@ -32,7 +32,7 @@ public class ResponseTimeRecording extends ExternalResource {
 
     private static final Logger LOG = getLogger(ResponseTimeRecording.class);
 
-    private ResponseTimeCollector collector = new ResponseTimeCollector();
+    private final ResponseTimeCollector collector = new ResponseTimeCollector();
 
     private boolean clearGlobalTable = true;
     private boolean printTransactions = true;

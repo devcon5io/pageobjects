@@ -56,7 +56,7 @@ public class SeleniumControl extends ExternalResource {
     /**
      * Flag to indicate if login has been performed
      */
-    private AtomicBoolean loggedIn = new AtomicBoolean(false);
+    private final AtomicBoolean loggedIn = new AtomicBoolean(false);
 
     /**
      * Action to initialize the web driver
@@ -226,7 +226,7 @@ public class SeleniumControl extends ExternalResource {
 
         private Consumer<WebDriver.Options> optionsInitializer;
 
-        private SeleniumContextBuilder() {
+        SeleniumContextBuilder() {
 
         }
 

@@ -42,8 +42,8 @@ public interface Page extends ElementGroup {
             Optional.ofNullable(this.getClass().getAnnotation(Locator.class))
                     .flatMap(l -> l.by().locate(l.value()))
                     .ifPresent(WebElement::click);
-            new WebDriverWait(driver, 150, 50).until((Predicate<WebDriver>) d -> ((JavascriptExecutor) d).executeScript(
-                    "return document.readyState").equals("complete"));
+            new WebDriverWait(driver, 150, 50).until((Predicate<WebDriver>) d ->
+                    "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
             return Void.TYPE;
         }).orElseThrow(() -> new IllegalStateException("Context not initialized"));
     }

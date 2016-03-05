@@ -36,12 +36,12 @@ public final class ResponseTimes {
     /**
      * Global ResponseTime collection.
      */
-    private static final Map<UUID, ResponseTime> responseTimes = new ConcurrentHashMap<>();
+    private static final Map<UUID, ResponseTime> TIMES = new ConcurrentHashMap<>();
 
     /**
      * Default consumer putting a response time into the global table
      */
-    private static final Consumer<ResponseTime> DEFAULT_CONSUMER = rt -> responseTimes.put(rt.getUuid(), rt);
+    private static final Consumer<ResponseTime> DEFAULT_CONSUMER = rt -> TIMES.put(rt.getUuid(), rt);
 
     private static AtomicReference<Consumer<ResponseTime>> START_TX_CONSUMER = new AtomicReference<>(DEFAULT_CONSUMER);
 
@@ -54,7 +54,7 @@ public final class ResponseTimes {
      */
     public static void clear() {
 
-        responseTimes.clear();
+        TIMES.clear();
     }
 
     /**
@@ -163,7 +163,7 @@ public final class ResponseTimes {
     public static Map<String, List<ResponseTime>> getResponseTimes() {
 
         final Map<String, List<ResponseTime>> result = new HashMap<>();
-        responseTimes.values().stream().forEach(trt -> {
+        TIMES.values().stream().forEach(trt -> {
             if (!result.containsKey(trt.getTransaction())) {
                 result.put(trt.getTransaction(), new ArrayList<>());
             }

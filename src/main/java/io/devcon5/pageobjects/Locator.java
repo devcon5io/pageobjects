@@ -82,9 +82,9 @@ public @interface Locator {
         CLASS(By::className),
         CSS(By::cssSelector);
 
-        private transient final Optional<Function<String, org.openqa.selenium.By>> mapper;
+        private transient final Optional<Function<String, By>> mapper;
 
-        ByLocator(Function<String, org.openqa.selenium.By> mapper) {
+        ByLocator(Function<String, By> mapper) {
             this.mapper = Optional.ofNullable(mapper);
         }
 
