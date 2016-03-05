@@ -91,7 +91,7 @@ public final class ResponseTimes {
      *
      * @return the ResponseTime handle to track the time measure
      */
-    public ResponseTime startTx(String transaction) {
+    public static ResponseTime startTx(String transaction) {
 
         return startTx(transaction, Instant.now());
     }
