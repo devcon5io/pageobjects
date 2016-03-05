@@ -30,7 +30,6 @@ import net.sf.cglib.proxy.MethodInterceptor;
 public final class TransactionHelper {
 
     private TransactionHelper() {
-
     }
 
     /**
