@@ -167,6 +167,6 @@ public class ResponseTimeCollectorTest {
         ResponseTime rt = rtEndRef.get();
         assertNotNull(rt);
         assertEquals("test", rt.getTransaction());
-        assertEquals(Duration.ofMillis(100), rt.getDuration());
+        assertTrue(rt.getDuration().compareTo(Duration.ofMillis(95)) > 0);
     }
 }
