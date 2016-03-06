@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-package io.devcon5.pageobjects;
-
-/**
- *
- */
+package io.devcon5.pageobjects.tx;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -27,14 +23,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Qualifier annotation to define custom qualifiers for ElementGroups. In case a {@link io.devcon5.pageobjects.Page}
- * or an {@link io.devcon5.pageobjects.ElementGroup} declares more than one element group of the same type, it should
- * be qualified in order to access it via the {@link ElementGroup#get(Class, Class[])}  method.
- *
+ * Used declare a page or operation on a page transactional. If a page is annotated with this annotation,
+ * the loading of the page is considered a transaction (using the value as transaction name). If a method
+ * is annotated with this annotation, the execution of the method is considered a transaction.
  */
 @Inherited
-@Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Qualifier {
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface Transaction {
 
+    /**
+     * The name of the transaction. If the value is ommitted, the transaction will be derived from
+     * the classname (for {@link io.devcon5.pageobjects.Page}s or from the method name and the name of the
+     * class or the transaction of the class.
+     * @return
+     *  the name of the transaction
+     */
+    String value() default "";
 }

@@ -23,7 +23,6 @@ import static org.mockito.Mockito.withSettings;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Before;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -35,7 +34,7 @@ import org.openqa.selenium.WebDriver;
  */
 public class SeleniumTestContext implements TestRule {
 
-    private SeleniumContext ctx;
+    private SeleniumControl ctx;
     private WebDriver mockDriver;
     private Description mockDescription;
 
@@ -67,7 +66,6 @@ public class SeleniumTestContext implements TestRule {
      * Executes the callable in the context of the selenium context provided by the test
      *
      * @param run
-     * @param <T>
      *
      * @return
      *
@@ -96,7 +94,7 @@ public class SeleniumTestContext implements TestRule {
                     mockDriver = mock(WebDriver.class, withSettings().defaultAnswer(RETURNS_DEEP_STUBS)
                                                                      .extraInterfaces(JavascriptExecutor.class));
                     mockDescription = mock(Description.class);
-                    ctx = SeleniumContext.builder().driver(() -> mockDriver).baseUrl("http://localhost").build();
+                    ctx = SeleniumControl.builder().driver(() -> mockDriver).baseUrl("http://localhost").build();
                     statement.evaluate();
                 } finally {
 

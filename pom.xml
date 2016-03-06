@@ -24,7 +24,7 @@
     </parent>
 
     <artifactId>pageobjects</artifactId>
-	<version>0.2</version>
+	<version>0.3</version>
 
     <name>${project.artifactId}</name>
     <description>A small library to define a pageobject model for testing applications with selenium.</description>
@@ -49,6 +49,12 @@
             <artifactId>classutils</artifactId>
             <version>${devcon5.commons}</version>
         </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>5.0.4</version>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>

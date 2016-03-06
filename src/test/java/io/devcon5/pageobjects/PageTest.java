@@ -16,15 +16,10 @@
 
 package io.devcon5.pageobjects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,41 +42,37 @@ public class PageTest {
     @Mock
     private WebElement webElement;
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testNavigateTo_noDriver() throws Exception {
         //prepare
         Page page = new Page(){};
 
         //act
-        Optional<WebElement> element = page.navigateTo();
-
-        //assert
-        assertFalse(element.isPresent());
-
+        page.loadPage();
     }
 
     @Test
     public void testNavigateTo_noLocation() throws Throwable {
         //prepare
         Page page = new Page(){};
+        when(((JavascriptExecutor)selenium.getMockDriver()).executeScript(anyString())).thenReturn("complete");
 
         //act
-        Optional<WebElement> element = selenium.execute(() -> page.navigateTo());
+        selenium.execute(() -> page.loadPage());
 
         //assert
-        assertFalse(element.isPresent());
     }
 
     @Test
     public void testNavigateTo_withUrlLocation() throws Throwable {
         //prepare
         Page page = new TestUrlPage();
+        when(((JavascriptExecutor)selenium.getMockDriver()).executeScript(anyString())).thenReturn("complete");
 
         //act
-        Optional<WebElement> element = selenium.execute(() -> page.navigateTo());
+        selenium.execute(() -> page.loadPage());
 
         //assert
-        assertFalse(element.isPresent());
         verify(selenium.getMockDriver().navigate()).to("http://localhost/contextRoot");
     }
 
@@ -89,14 +80,13 @@ public class PageTest {
     public void testNavigateTo_withNavElementLocation() throws Throwable {
         //prepare
         Page page = new TestElementPage();
+        when(((JavascriptExecutor)selenium.getMockDriver()).executeScript(anyString())).thenReturn("complete");
         when(selenium.getMockDriver().findElement(By.id("testId"))).thenReturn(webElement);
 
         //act
-        Optional<WebElement> element = selenium.execute(() -> page.navigateTo());
+        selenium.execute(() -> page.loadPage());
 
         //assert
-        assertTrue(element.isPresent());
-        assertEquals(webElement, element.get());
     }
 
     @Test

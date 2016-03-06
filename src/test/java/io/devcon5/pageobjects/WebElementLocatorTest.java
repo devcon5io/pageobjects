@@ -53,7 +53,7 @@ public class WebElementLocatorTest {
     @Rule
     public SeleniumTestContext selenium = new SeleniumTestContext();
 
-    private SeleniumContext ctx;
+    private SeleniumControl ctx;
 
 
 

@@ -18,7 +18,6 @@ package io.devcon5.pageobjects;
 
 import static io.devcon5.pageobjects.Locator.ByLocator.ID;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
@@ -46,6 +45,9 @@ public class PageObjectsInjectorTest {
     @Mock
     private WebElement element;
 
+    @Mock
+    private WebDriver driver;
+
     @Test
     public void testInjectMethods() throws Exception {
         //prepare
@@ -66,9 +68,10 @@ public class PageObjectsInjectorTest {
 
         //prepare
         ChildFieldInjectTestGroup group = new ChildFieldInjectTestGroup();
-        SeleniumContext ctx = SeleniumContext.builder().driver(() -> mock(WebDriver.class)).baseUrl("http://localhost")
+        SeleniumControl ctx = SeleniumControl.builder().driver(() -> driver)
+                                             .baseUrl("http://localhost")
                                              .build();
-        when(ctx.getDriver().get().findElement(By.id("subgroup"))).thenReturn(element);
+        when(driver.findElement(By.id("subgroup"))).thenReturn(element);
         //act
         ctx.apply(new Statement() {
             @Override
