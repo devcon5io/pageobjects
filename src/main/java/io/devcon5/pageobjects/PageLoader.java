@@ -18,7 +18,7 @@ package io.devcon5.pageobjects;
 
 import static io.devcon5.pageobjects.tx.TransactionHelper.addTransactionSupport;
 
-import io.devcon5.pageobjects.tx.Transactional;
+import io.devcon5.pageobjects.tx.TransactionSupport;
 
 /**
  * Loader of a page instance. The page loader adds transaction support to the instance to measure
@@ -41,8 +41,8 @@ public final class PageLoader {
 
         try {
             T page = pageType.newInstance();
-            if (Transactional.class.isAssignableFrom(pageType)) {
-                page = addTransactionSupport((Transactional)page);
+            if (TransactionSupport.class.isAssignableFrom(pageType)) {
+                page = addTransactionSupport((TransactionSupport)page);
             }
             return page;
 

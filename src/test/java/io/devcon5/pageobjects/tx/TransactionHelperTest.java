@@ -171,7 +171,7 @@ public class TransactionHelperTest {
 
     //// Test classes
     @Transaction
-    public static class UnnamedTransaction implements Transactional{
+    public static class UnnamedTransaction implements TransactionSupport {
 
         @Transaction
         public void unnamedTx(){}
@@ -181,7 +181,7 @@ public class TransactionHelperTest {
     }
 
     @Transaction("CustomName")
-    public static class NamedTransaction implements Transactional{
+    public static class NamedTransaction implements TransactionSupport {
         @Transaction("CustomTx")
         public void namedTx(){}
         public void noTx(){}

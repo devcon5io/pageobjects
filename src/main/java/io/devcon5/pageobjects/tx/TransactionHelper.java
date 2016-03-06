@@ -38,26 +38,26 @@ public final class TransactionHelper {
      *
      * @param <T>
      *
-     * @param transactional
-     *         the transactional element to be enhanced.
+     * @param transactionSupport
+     *         the transactionSupport element to be enhanced.
      * @return
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Transactional> T addTransactionSupport(Transactional transactional) {
-        return (T) Enhancer.create(transactional.getClass(), (MethodInterceptor) (obj, method, args, proxy) -> {
-            final Optional<String> txName = getTxName(transactional, method);
+    public static <T extends TransactionSupport> T addTransactionSupport(TransactionSupport transactionSupport) {
+        return (T) Enhancer.create(transactionSupport.getClass(), (MethodInterceptor) (obj, method, args, proxy) -> {
+            final Optional<String> txName = getTxName(transactionSupport, method);
             try {
-                txName.ifPresent(transactional::txBegin);
-                Object result = method.invoke(transactional, args);
-                //dynamically enhance return values, if they are transactional and not yet enhanced
+                txName.ifPresent(transactionSupport::txBegin);
+                Object result = method.invoke(transactionSupport, args);
+                //dynamically enhance return values, if they are transactionSupport and not yet enhanced
                 //this is required, i.e. if method return 'this' or create new objects which will
                 //not be enhanced
-                if (!isCGLibProxy(result) && result instanceof Transactional) {
-                    result = addTransactionSupport(transactional);
+                if (!isCGLibProxy(result) && result instanceof TransactionSupport) {
+                    result = addTransactionSupport(transactionSupport);
                 }
                 return result;
             } finally {
-                txName.ifPresent(transactional::txEnd);
+                txName.ifPresent(transactionSupport::txEnd);
             }
         });
     }

@@ -25,7 +25,7 @@ import io.devcon5.pageobjects.measure.ResponseTimeCollector;
  * recorded. To automatically record certain actions such as page load or method execution the according elements
  * (Page class or Method) have to be annotated with {@link Transaction}
  */
-public interface Transactional {
+public interface TransactionSupport {
 
     /**
      * Method to start a transaction manually. It's important to stop the transaction

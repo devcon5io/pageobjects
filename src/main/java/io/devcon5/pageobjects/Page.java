@@ -22,7 +22,7 @@ import static io.devcon5.pageobjects.tx.TransactionHelper.getClassTxName;
 import java.util.Optional;
 
 import com.google.common.base.Predicate;
-import io.devcon5.pageobjects.tx.Transactional;
+import io.devcon5.pageobjects.tx.TransactionSupport;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -61,8 +61,8 @@ public interface Page extends ElementGroup {
     static <T extends Page> T navigateTo(Class<T> pageType) {
 
         final T page = PageLoader.loadPage(pageType);
-        final Optional<Transactional> tx = Optional.ofNullable(Transactional.class.isAssignableFrom(pageType)
-                                                               ? (Transactional) page
+        final Optional<TransactionSupport> tx = Optional.ofNullable(TransactionSupport.class.isAssignableFrom(pageType)
+                                                               ? (TransactionSupport) page
                                                                : null);
         tx.ifPresent(ts -> getClassTxName(pageType).ifPresent(ts::txBegin));
         try {
