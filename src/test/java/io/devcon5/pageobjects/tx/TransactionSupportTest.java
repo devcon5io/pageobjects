@@ -33,12 +33,12 @@ import org.junit.Test;
 /**
  *
  */
-public class TransactionalTest {
+public class TransactionSupportTest {
 
     /**
      * The class under test
      */
-    private Transactional subject = new Transactional() {
+    private TransactionSupport subject = new TransactionSupport() {
     };
 
     private ResponseTimeCollector rtc = new ResponseTimeCollector();

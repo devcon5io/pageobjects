@@ -80,20 +80,6 @@ As example, take a login page:
         }
     }
 
-When using the page object in your tests, you have to navigate to the page first and then may invoke
-the methods on the objects.
-
-    @Test
-    public void testLogin() {
-        LoginPage login = Page.navigateTo(LoginPage.class);
-        login.enterUsername("username")
-             .enterPassword("password")
-             .pressLogin();
-    }
-
-If the mechanism to load a page - either by navigating to the URL or by clicking on an element on the page - 
-should be different, the `loadPage()` method can be implemented.
-
 ## Running Tests with Page Objects
 The parts that load the page and locate the elements on the page require a Selenium driver. The default
 case is to run a test with a single driver in one test execution thread. In order to initialize a driver
@@ -114,3 +100,142 @@ for the current test, the library provides a test rule that has to be added to t
 The basePath in the example has to be the absolute URL required to resolve all relative URLs of 
 locators defined of your model. For driver a `java.util.function.Supplier` is passed. The library
 provides a set of default suppliers in the `Drivers` enum.
+
+## Using the Page Objects in your test
+When using the page object in your tests, you have to navigate to the page first and then may invoke
+the methods on the objects.
+
+    @Test
+    public void testLogin() {
+        LoginPage login = Page.navigateTo(LoginPage.class);
+        login.enterUsername("username")
+             .enterPassword("password")
+             .pressLogin();
+    }
+
+If the mechanism to load a page - either by navigating to the URL or by clicking on an element on the page - 
+should be different, the `loadPage()` method can be implemented.
+
+## Grouping Elements
+Typically, elements of a web page are grouped into logical units. A common example is a Form element containing input
+ elements. Further, Selenium supports element location in a specific search context. The default search context is 
+ the driver, but every other element of a page can be a search context itself, i.e. the mentioned form element being 
+ the search context for locating the input elements.
+ 
+the pageobjects library provides the `ElementGroup` interface for that. The interface defines the `getSearchContext` 
+method defaulting to the current driver. If an ElementGropu requires a different search context, this method must be
+implemented. 
+Further the `ElementGroup` defines a generic getter method for obtaining sub-element groups and a method that is
+ invoked to locate the elements of the page, defaulting to the injection mechanism of the pageobjects library.
+
+The `Page` interface is a specialization of the `ElementGroup`.
+
+Any page or element group can nest further element groups. Those are automatically injected, when the test control 
+flow navigates to the page and thereby creating the page instance. 
+
+Example:
+
+    public class LoginForm implements ElementGroup {
+        @Locator(by = ID, value = "username")
+        Supplier<WebElement> username;
+        
+        @Locator(by = ID, value = "password")
+        Supplier<WebElement> password;
+                
+        @Locator(by = ID, value = "login")
+        Supplier<WebElement> loginButton;
+        
+        public LoginPage enterUsername(String username){
+            username.get().sendKeys(username);
+        }
+        public LoginPage enterPassword(String password){
+            password.get().sendKeys(username);
+        }
+        public void pressLogin(){
+            loginButton.get().click();
+        }
+    }
+    
+    @Locator("login.jsp")
+    public class LoginPage implements Page {
+        LoginForm form;
+    }
+    
+
+# Measure User Transactions
+Usually, the response times for certain interactions on the user interface are part of the non-functional requirements
+and should be part of a specification, the tests. First step to measure response times, is to declare user transactions
+for which the begin and end timestamp should be recorded. For this purpose, the pageobjects library provides the 
+`Transaction` annotation. ElementGroup, including Pages, and Methods can be marked as transaction. The name of the
+user transaction can be specified as value of the annotation or it is dynamically derived from the method or
+declaring class. 
+
+## Add Transaction Support to Page Object Model
+To enable the transaction support, the ElementGroup or Page has to implement `TransactionSupport`. When the 
+instance of the element group or page is created, it is automatically enhanced to record the repsonse times
+of methods annotated with `Transaction` as well as the time it takes to load the Page, if the Page implementation 
+is annotated as well. For all other ElementGroups annotated with `Transaction`, the annotation is only used to 
+derive the name of all transaction of that group.
+
+Example for Declaring annoation:
+
+    public class LoginForm implements ElementGroup, TransactionSupport {
+         // ...
+         
+        @Transaction("Login")
+        public void pressLogin(){
+            loginButton.get().click();
+        }
+    }
+    
+Alternatively, you may declare the start and stop point for the response time measurement imperatively invoking
+the `txBegin` and `txEnd` method defined in the `TransactionSupport` interface.
+ 
+    public class LoginForm implements ElementGroup, TransactionSupport {
+          // ...
+          
+         public void pressLogin(){
+             txBegin("Login");
+             loginButton.get().click();
+             txEnd("Login");
+         }
+    }
+ 
+
+## Enable Response Time Recording
+To collect the response times of the declared transactions of your Page Object model in your test, you have to 
+add the `ResponseTimeRecording` rule to your tests:
+
+    @Rule
+    public ResponseTimeRecording rt = new ResponseTimeRecording();
+    
+This will activate the automatic recording of all response times of performed transactions of your model.
+
+The test rule uses a response time collector that is bound to the current thread. The ResponseTime recording mechanism
+can also be used outside of a unit test, if needed, using the `ResponseTimeCollector`
+
+    ResponseTimeCollector collector = new ResponseTimeCollector();
+    collector.startRecording();
+    // do something
+    collector.stopRecording();
+    
+This will bind the collector instance to the current thread, making it accessible using a static getter:
+
+    ResponseTimeCollector.current().ifPresent(rtc -> rtc.startTx("customTx");
+    //do transaction
+    ResponseTimeCollector.current().ifPresent(rtc -> rtc.stopTx("customTx");
+    
+## Accessing Response Times
+All started and completed collection are passed to the global collector `ResponseTimes`. The default setting for that
+global collector is to record all captured response times and making them accessible using the `getResponesTimes`, 
+providing a map, mapping all transactions to recorded response times for that transaction. As being a shared collector,
+the collection of recorded response times fills up over time and needs to be cleaned up to prevent memory leaking.
+Therefore the `clear` method should be invoked if the captured response times are processed.
+
+This default behavior can be changed by overriding the handlers for 
+
+- `onMeasureStart`
+- `onMeasureEnd`
+
+Typical use cases for changing that behavior are to pass the measures into a central database or to another processing
+system.

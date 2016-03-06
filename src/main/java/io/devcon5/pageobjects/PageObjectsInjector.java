@@ -27,7 +27,7 @@ import org.openqa.selenium.WebElement;
 
 import io.devcon5.classutils.ClassStreams;
 import io.devcon5.pageobjects.tx.TransactionHelper;
-import io.devcon5.pageobjects.tx.Transactional;
+import io.devcon5.pageobjects.tx.TransactionSupport;
 
 /**
  * Injector to inject WebElement suppliers to Fields and Methods of a Page
@@ -148,8 +148,8 @@ public final class PageObjectsInjector {
                             .orElseGet(() -> createDefaultInstance(elementGroupType));
             target.setAccessible(true);
             injectFields(nestedGroup);
-            if(Transactional.class.isAssignableFrom(target.getDeclaringClass())){
-                nestedGroup = TransactionHelper.addTransactionSupport((Transactional)nestedGroup);
+            if(TransactionSupport.class.isAssignableFrom(target.getDeclaringClass())){
+                nestedGroup = TransactionHelper.addTransactionSupport((TransactionSupport)nestedGroup);
             }
             target.set(parent, nestedGroup);
         } catch (IllegalAccessException e) {

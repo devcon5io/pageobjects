@@ -25,7 +25,7 @@ import io.devcon5.pageobjects.measure.ResponseTime;
 import io.devcon5.pageobjects.measure.ResponseTimeCollector;
 import io.devcon5.pageobjects.measure.ResponseTimes;
 import io.devcon5.pageobjects.tx.Transaction;
-import io.devcon5.pageobjects.tx.Transactional;
+import io.devcon5.pageobjects.tx.TransactionSupport;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +88,7 @@ public class PageLoaderTest {
     public static class PrivateConstructorPage implements Page {
         private PrivateConstructorPage(){}
     }
-    public static class TxPage implements Page, Transactional {
+    public static class TxPage implements Page, TransactionSupport {
         @Transaction
         public void transactionalOp(){}
     }
