@@ -80,20 +80,6 @@ As example, take a login page:
         }
     }
 
-When using the page object in your tests, you have to navigate to the page first and then may invoke
-the methods on the objects.
-
-    @Test
-    public void testLogin() {
-        LoginPage login = Page.navigateTo(LoginPage.class);
-        login.enterUsername("username")
-             .enterPassword("password")
-             .pressLogin();
-    }
-
-If the mechanism to load a page - either by navigating to the URL or by clicking on an element on the page - 
-should be different, the `loadPage()` method can be implemented.
-
 ## Running Tests with Page Objects
 The parts that load the page and locate the elements on the page require a Selenium driver. The default
 case is to run a test with a single driver in one test execution thread. In order to initialize a driver
@@ -114,3 +100,18 @@ for the current test, the library provides a test rule that has to be added to t
 The basePath in the example has to be the absolute URL required to resolve all relative URLs of 
 locators defined of your model. For driver a `java.util.function.Supplier` is passed. The library
 provides a set of default suppliers in the `Drivers` enum.
+
+## Using the Page Objects in your test
+When using the page object in your tests, you have to navigate to the page first and then may invoke
+the methods on the objects.
+
+    @Test
+    public void testLogin() {
+        LoginPage login = Page.navigateTo(LoginPage.class);
+        login.enterUsername("username")
+             .enterPassword("password")
+             .pressLogin();
+    }
+
+If the mechanism to load a page - either by navigating to the URL or by clicking on an element on the page - 
+should be different, the `loadPage()` method can be implemented.
